@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mis Compras — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.3rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .nav-links { display:flex; gap:8px; align-items:center; }
+        .nav-links a {
+            color:white; text-decoration:none; font-weight:bold; font-size:0.88rem;
+            background:rgba(0,0,0,0.1); padding:8px 14px; border-radius:10px; transition:0.2s;
+        }
+        .nav-links a:hover { background:rgba(0,0,0,0.22); }
+
+        /* ── TABS ── */
+        .tabs {
+            display: flex; justify-content: center; gap: 8px;
+            background: white; padding: 12px 20px;
+            border-bottom: 4px solid #EEE;
+        }
+        .tab {
+            padding: 10px 22px; cursor: pointer; border-radius: 12px 12px 0 0;
+            color: #AAA; font-weight: bold; font-size: 0.9rem;
+            transition: 0.2s; text-decoration: none; border: 3px solid transparent;
+        }
+        .tab.activo {
+            color: #2E7D32; background: #FFFDF5;
+            border: 3px solid #EEE; border-bottom: 3px solid #FFFDF5;
+            margin-bottom: -4px; z-index: 2;
+        }
+        .tab:hover:not(.activo) { color: #666; background: #F5F5F5; }
+
+        /* ── CONTENEDOR ── */
+        .container { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
+
+        /* ── STATS ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: white; border-radius: 20px; padding: 20px;
+            border: 3px solid #EEE; box-shadow: 0 5px 0 #F0F0F0; text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem; font-weight: bold; display: block; color: #333; margin-bottom: 4px;
+        }
+        .stat-number.gasto  { color: #2E7D32; }
+        .stat-number.trueque{ color: #8E24AA; }
+        .stat-label { color: #AAA; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── TABLA CARD ── */
+        .tabla-card {
+            background: white; border-radius: 22px;
+            border: 3px solid #B3E5BE; box-shadow: 0 6px 0 #D4EDDA; overflow: hidden;
+        }
+        .fila-compra {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 0.5fr;
+            padding: 16px 20px;
+            border-bottom: 2px solid #F8F8F8;
+            align-items: center;
+            transition: background 0.15s;
+        }
+        .fila-compra:last-child { border-bottom: none; }
+        .fila-compra:hover:not(.fila-header) { background: #F6FFF8; }
+        .fila-header {
+            background: #F1FBF2; font-weight: bold; color: #2E7D32;
+            text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;
+        }
+        .carta-info { display: flex; align-items: center; gap: 12px; }
+        .carta-avatar {
+            font-size: 1.3rem; background: #F5F5F5;
+            width: 42px; height: 42px; display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; flex-shrink: 0;
+        }
+        .carta-nombre { font-weight: bold; font-size: 0.9rem; color: #333; }
+        .carta-fecha  { font-size: 0.78rem; color: #BBB; margin-top: 2px; }
+        .vendedor-nombre { font-weight: bold; font-size: 0.88rem; color: #333; }
+        .vendedor-id     { font-size: 0.75rem; color: #CCC; margin-top: 1px; }
+
+        .badge {
+            display: inline-block; padding: 5px 11px; border-radius: 50px;
+            font-size: 0.72rem; font-weight: bold; text-transform: uppercase;
+        }
+        .tipo-TRUEQUE { background: #F3E5F5; color: #8E24AA; }
+        .tipo-VENTA   { background: #E3F2FD; color: #1E88E5; }
+        .estado-PENDIENTE  { background: #FFF3E0; color: #EF6C00; }
+        .estado-COMPLETADA { background: #E8F5E9; color: #2E7D32; }
+
+        .precio { font-weight: bold; color: #2E7D32; }
+        .precio.trueque { color: #8E24AA; }
+
+        .btn-valorar {
+            background: white; border: 2px solid #EEE;
+            border-radius: 10px; padding: 6px 10px; cursor: pointer;
+            font-size: 1rem; transition: 0.2s;
+        }
+        .btn-valorar:hover:not(:disabled) { transform: scale(1.1); border-color: #FDE68A; }
+        .btn-valorar:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+
+        /* ── ESTADO VACÍO ── */
+        .estado-vacio { text-align: center; padding: 40px; color: #CCC; }
+        .estado-vacio .icono { font-size: 2.5rem; margin-bottom: 12px; }
+        .estado-vacio h3     { font-size: 1rem; color: #BBB; margin-bottom: 6px; }
+        .estado-vacio p      { font-size: 0.85rem; }
+        .estado-vacio a      { color: #FF8A8A; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(3px);
+        }
+        .modal-overlay.abierto { display: flex; }
+        .modal-box {
+            background: white; padding: 30px; border-radius: 28px;
+            width: 90%; max-width: 380px; text-align: center;
+            border: 4px solid #FFB3B3; box-shadow: 0 8px 0 #FFD1D1;
+            animation: fadeInUp 0.25s ease-out;
+        }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:none;} }
+        .modal-box h2 { font-size: 1.2rem; color: #333; margin-bottom: 18px; }
+        .estrellas { display: flex; justify-content: center; gap: 6px; margin-bottom: 14px; }
+        .estrella {
+            font-size: 2rem; cursor: pointer; color: #DDD; transition: 0.15s;
+        }
+        .estrella.activa { color: #FFD700; }
+        .estrella:hover  { transform: scale(1.15); }
+        textarea {
+            width: 100%; height: 90px; border-radius: 14px; border: 2px solid #EEE;
+            padding: 10px 12px; font-family: inherit; font-size: 0.9rem; color: #333;
+            outline: none; resize: none; margin-bottom: 14px;
+        }
+        textarea:focus { border-color: #FF8A8A; }
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-enviar {
+            flex: 1; background: #FF8A8A; color: white; border: none;
+            border-radius: 12px; padding: 12px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #E57373; transition: all 0.2s;
+        }
+        .btn-enviar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #E57373; }
+        .btn-cancel {
+            flex: 1; background: #F0F0F0; color: #666; border: none;
+            border-radius: 12px; padding: 12px; font-weight: bold; cursor: pointer;
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            padding: 12px 28px; color: white; font-weight: bold; border-radius: 50px;
+            display: none; z-index: 2000; font-size: 0.9rem;
+        }
+        .toast.visible { display: block; }
+        .toast.exito { background: #81C784; }
+        .toast.error { background: #E57373; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Mis Compras
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/web/home}">Inicio</a>
+        <a th:href="@{/web/mercado}">Mercado</a>
+        <a th:href="@{/web/mercado/mis-ventas}">Mis Ventas</a>
+        <a th:href="@{/web/logout}">Salir</a>
+    </div>
+</nav>
+
+<div class="tabs">
+    <a class="tab" th:href="@{/web/mercado/mis-ventas}">Mis Ventas</a>
+    <a class="tab activo" th:href="@{/web/mercado/mis-compras}">Mis Compras</a>
+    <a class="tab" th:href="@{/web/valoraciones}">Valoraciones</a>
+</div>
+
+<div class="container">
+    <div class="stats-row">
+        <div class="stat-card">
+            <span class="stat-number" id="statTotal">0</span>
+            <div class="stat-label">Compras totales</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number gasto" id="statGasto">€0</span>
+            <div class="stat-label">Gasto total</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number trueque" id="statTrueques">0</span>
+            <div class="stat-label">Trueques</div>
+        </div>
+    </div>
+
+    <div class="tabla-card">
+        <div class="fila-compra fila-header">
+            <div>Carta</div>
+            <div>Vendedor</div>
+            <div>Tipo</div>
+            <div>Precio</div>
+            <div>Estado</div>
+            <div>Valorar</div>
+        </div>
+        <div id="listaCompras">
+            <div class="estado-vacio">
+                <div class="icono">⏳</div>
+                <h3>Cargando...</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal valorar -->
+<div class="modal-overlay" id="modalValorar">
+    <div class="modal-box">
+        <h2>⭐ Valorar al vendedor</h2>
+        <div class="estrellas">
+            <span class="estrella" data-valor="1" onclick="seleccionarEstrella(1)">★</span>
+            <span class="estrella" data-valor="2" onclick="seleccionarEstrella(2)">★</span>
+            <span class="estrella" data-valor="3" onclick="seleccionarEstrella(3)">★</span>
+            <span class="estrella" data-valor="4" onclick="seleccionarEstrella(4)">★</span>
+            <span class="estrella" data-valor="5" onclick="seleccionarEstrella(5)">★</span>
+        </div>
+        <textarea id="comentarioValoracion" placeholder="Deja un comentario..."></textarea>
+        <div class="modal-btns">
+            <button class="btn-enviar" onclick="enviarValoracion()">Enviar valoración</button>
+            <button class="btn-cancel" onclick="cerrarModal('modalValorar')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script th:inline="javascript">
+    const USUARIO_ID  = /*[[${usuarioId}]]*/ 1;
+    const API_MERCADO = '/api/mercado';
+
+    let compras = [];
+    let ventaParaValorar = null;
+    let estrellaSeleccionada = 0;
+
+    const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
+
+    async function cargarCompras() {
+        try {
+            const res = await fetch(`${API_MERCADO}/compras/${USUARIO_ID}`);
+            compras = await res.json();
+            renderizarCompras();
+        } catch {
+            document.getElementById('listaCompras').innerHTML =
+                '<div class="estado-vacio"><div class="icono">⚠️</div><h3>Error al cargar</h3></div>';
+        }
+    }
+
+    function renderizarCompras() {
+        const lista = document.getElementById('listaCompras');
+        if (!compras.length) {
+            lista.innerHTML = `<div class="estado-vacio"><div class="icono">🛍️</div><h3>Aún no has comprado nada</h3><p>Visita el <a href="/web/mercado">mercado</a> para encontrar cartas</p></div>`;
+            actualizarStats(0,'€0',0); return;
+        }
+        const totalGastado = compras.filter(c=>c.precio).reduce((acc,c)=>acc+parseFloat(c.precio),0);
+        const trueques     = compras.filter(c=>c.tipo==='TRUEQUE').length;
+        actualizarStats(compras.length, `€${totalGastado.toFixed(2)}`, trueques);
+
+        lista.innerHTML = compras.map(c => {
+            const fecha    = c.fecha ? new Date(c.fecha).toLocaleDateString('es-ES') : '—';
+            const esTrueque= c.tipo === 'TRUEQUE';
+            const esComp   = c.estado === 'COMPLETADA';
+            return `
+            <div class="fila-compra">
+                <div class="carta-info">
+                    <div class="carta-avatar">${RAREZA_EMOJI[c.cartaRareza] || '🃏'}</div>
+                    <div>
+                        <div class="carta-nombre">${c.cartaNombre || 'Carta #'+c.cartaId}</div>
+                        <div class="carta-fecha">${fecha}</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="vendedor-nombre">${c.vendedorNombre}</div>
+                    <div class="vendedor-id">ID: ${c.vendedorId}</div>
+                </div>
+                <div><span class="badge tipo-${c.tipo}">${c.tipo}</span></div>
+                <div class="precio ${esTrueque?'trueque':''}">${esTrueque ? '🔄 Trueque' : (c.precio ? '€'+parseFloat(c.precio).toFixed(2) : '—')}</div>
+                <div><span class="badge estado-${c.estado}">${c.estado}</span></div>
+                <div>
+                    <button class="btn-valorar" title="${esComp?'Valorar vendedor':'Solo en compras completadas'}"
+                        onclick="${esComp ? 'abrirValorar('+c.id+')' : ''}" ${esComp?'':'disabled'}>⭐</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function actualizarStats(total, gastado, truekes) {
+        document.getElementById('statTotal').textContent    = total;
+        document.getElementById('statGasto').textContent    = gastado;
+        document.getElementById('statTrueques').textContent = truekes;
+    }
+
+    function abrirValorar(ventaId) {
+        ventaParaValorar = ventaId; estrellaSeleccionada = 0;
+        document.getElementById('comentarioValoracion').value = '';
+        document.querySelectorAll('.estrella').forEach(s => s.classList.remove('activa'));
+        document.getElementById('modalValorar').classList.add('abierto');
+    }
+
+    function seleccionarEstrella(n) {
+        estrellaSeleccionada = n;
+        document.querySelectorAll('.estrella').forEach((s,i) => s.classList.toggle('activa', i < n));
+    }
+
+    async function enviarValoracion() {
+        if (!estrellaSeleccionada) { mostrarToast('Selecciona una puntuación','error'); return; }
+        try {
+            const res = await fetch(`${API_MERCADO}/valorar?ventaId=${ventaParaValorar}`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ autorId: USUARIO_ID, puntuacion: estrellaSeleccionada,
+                    comentario: document.getElementById('comentarioValoracion').value })
+            });
+            if (res.ok) { cerrarModal('modalValorar'); mostrarToast('¡Valoración enviada! ⭐','exito'); }
+            else { const e = await res.text(); mostrarToast('Error: '+e,'error'); }
+        } catch { mostrarToast('Error de red','error'); }
+    }
+
+    function cerrarModal(id) { document.getElementById(id).classList.remove('abierto'); }
+    document.querySelectorAll('.modal-overlay').forEach(m =>
+        m.addEventListener('click', e => { if(e.target===m) m.classList.remove('abierto'); })
+    );
+
+    function mostrarToast(msg, tipo='exito') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = `toast ${tipo} visible`;
+        setTimeout(() => t.classList.remove('visible'), 3000);
+    }
+
+    cargarCompras();
+</script>
+</body>
+</html>

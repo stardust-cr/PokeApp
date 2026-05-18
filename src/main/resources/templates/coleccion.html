@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mi Colección — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.4rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .back-btn {
+            color:white; text-decoration:none; font-weight:bold;
+            background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px;
+            font-size:0.9rem; transition:background 0.2s;
+        }
+        .back-btn:hover { background:rgba(255,255,255,0.35); }
+
+        /* ── CONTENEDOR ── */
+        .contenedor { max-width: 1000px; margin: 0 auto; padding: 28px 20px; }
+
+        /* ── USUARIO BAR ── */
+        .usuario-bar {
+            background: white; padding: 16px 20px; border-radius: 18px;
+            margin-bottom: 24px; border: 3px solid #EEE; box-shadow: 0 4px 0 #F0F0F0;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .usuario-bar label { font-size: 0.88rem; color: #888; font-weight: bold; }
+        .usuario-bar input[type="number"] {
+            padding: 10px 14px; border: 2px solid #EEE; border-radius: 12px;
+            font-size: 0.95rem; outline: none; color: #333; width: 100px;
+            transition: border-color 0.2s;
+        }
+        .usuario-bar input[type="number"]:focus { border-color: #FF8A8A; }
+        .btn-cargar {
+            background: #FF8A8A; color: white; border: none;
+            border-radius: 12px; padding: 10px 18px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #E57373;
+            transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-cargar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #E57373; }
+
+        /* ── HERO ── */
+        .hero {
+            background: white; padding: 28px; border-radius: 25px;
+            border: 3px solid #FDE68A; box-shadow: 0 6px 0 #FDE68A;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+        }
+        .hero-texto h1 { font-size: 1.5rem; color: #333; margin-bottom: 4px; }
+        .hero-texto p  { color: #AAA; font-size: 0.88rem; }
+        .stat-num  { font-size: 2.5rem; font-weight: 800; color: #E63946; line-height: 1; }
+        .stat-label{ font-size: 0.8rem; color: #AAA; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── TOOLBAR ── */
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+        }
+        .toolbar-titulo { font-size: 1.1rem; font-weight: bold; color: #555; }
+        .btn-nueva-col {
+            background: #4ECDC4; color: white; border: none;
+            border-radius: 14px; padding: 10px 20px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #38B2AC;
+            transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-nueva-col:hover { transform: translateY(2px); box-shadow: 0 2px 0 #38B2AC; }
+
+        /* ── CARGANDO / VACÍO ── */
+        .cargando { text-align: center; color: #BBB; padding: 30px; font-size: 0.95rem; display: none; }
+        .empty     { text-align: center; color: #CCC; padding: 40px; display: none; }
+        .empty p   { font-size: 1rem; margin-bottom: 16px; }
+
+        /* ── GRID ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        /* ── COLECCION CARD ── */
+        .coleccion-card {
+            background: white; border-radius: 22px; overflow: hidden;
+            border: 3px solid #FF8A8A; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 0 #FFD1D1;
+        }
+        .coleccion-card:hover { transform: translateY(-4px); box-shadow: 0 8px 0 #FFD1D1; }
+        .coleccion-banner {
+            height: 80px; display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem;
+        }
+        .coleccion-banner-0 { background: #FFDada; }
+        .coleccion-banner-1 { background: #DaF5FF; }
+        .coleccion-banner-2 { background: #DaFFda; }
+        .coleccion-banner-3 { background: #FEFADA; }
+        .coleccion-banner-4 { background: #EADAFF; }
+        .coleccion-cuerpo { padding: 16px; }
+        .coleccion-nombre { font-weight: bold; font-size: 1.05rem; color: #333; margin-bottom: 4px; }
+        .coleccion-fecha  { font-size: 0.8rem; color: #AAA; margin-bottom: 4px; }
+        .coleccion-id     { font-size: 0.75rem; color: #CCC; }
+        .coleccion-footer { padding: 12px 16px; border-top: 2px solid #FEE; }
+        .btn-eliminar {
+            background: #E63946; color: white; border: none;
+            border-radius: 10px; padding: 8px 14px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 3px 0 #C62828;
+            transition: all 0.2s; font-size: 0.85rem; width: 100%;
+        }
+        .btn-eliminar:hover { transform: translateY(2px); box-shadow: 0 1px 0 #C62828; }
+
+        /* ── OVERLAY / MODAL ── */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center;
+            z-index: 100; backdrop-filter: blur(3px);
+        }
+        .overlay.open { display: flex; }
+        .modal {
+            background: white; padding: 30px; border-radius: 28px;
+            width: 90%; max-width: 400px; position: relative;
+            border: 4px solid #FDE68A; box-shadow: 0 10px 0 #FDE68A;
+            animation: fadeInUp 0.25s ease-out;
+        }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:none;} }
+        .modal h2 { font-size: 1.2rem; color: #333; margin-bottom: 18px; }
+        .modal label { display: block; font-size: 0.88rem; color: #888; font-weight: bold; margin-bottom: 8px; }
+        .modal input[type="text"] {
+            width: 100%; padding: 12px 14px; border: 2px solid #EEE;
+            border-radius: 12px; font-size: 0.95rem; outline: none;
+            color: #333; transition: border-color 0.2s; margin-bottom: 4px;
+        }
+        .modal input[type="text"]:focus { border-color: #FF8A8A; }
+        .confirm-texto { color: #666; font-size: 0.9rem; line-height: 1.6; }
+        .confirm-nombre { font-weight: bold; color: #333; }
+        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+        .btn-cancelar {
+            background: #F0F0F0; color: #666; border: none; border-radius: 12px;
+            padding: 10px 16px; font-weight: bold; cursor: pointer; font-size: 0.9rem;
+        }
+        .btn-ok {
+            background: #4ECDC4; color: white; border: none; border-radius: 12px;
+            padding: 10px 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #38B2AC; transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-ok:hover { transform: translateY(2px); box-shadow: 0 2px 0 #38B2AC; }
+        .btn-eliminar-ok {
+            background: #E63946; color: white; border: none; border-radius: 12px;
+            padding: 10px 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #C62828; transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-eliminar-ok:hover { transform: translateY(2px); box-shadow: 0 2px 0 #C62828; }
+        .cerrar {
+            position: absolute; top: 14px; right: 14px;
+            background: #F0F0F0; border: none; font-size: 0.9rem; cursor: pointer;
+            color: #888; border-radius: 50%; width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .cerrar:hover { background: #FCA5A5; color: white; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            padding: 12px 28px; background: #333; color: white; border-radius: 50px;
+            display: none; z-index: 1000; font-weight: bold; font-size: 0.9rem;
+        }
+        .toast.show { display: block; animation: fadeInUp 0.3s; }
+        .toast.ok { background: #4ECDC4; }
+        .toast.err { background: #E63946; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Mi Colección
+    </a>
+    <a th:href="@{/web/home}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="contenedor">
+
+    <div class="usuario-bar">
+        <label>ID de usuario:</label>
+        <input type="number" id="userId" placeholder="Ej: 1" value="1">
+        <button class="btn-cargar" onclick="cargarColecciones()">Cargar Colecciones</button>
+    </div>
+
+    <div class="hero">
+        <div class="hero-texto">
+            <h1>Mis Colecciones</h1>
+            <p>Organiza y gestiona tus colecciones de cartas Pokémon</p>
+        </div>
+        <div>
+            <div class="stat-num" id="statTotal">0</div>
+            <div class="stat-label">Colecciones</div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="toolbar-titulo">Colecciones</div>
+        <button class="btn-nueva-col" onclick="abrirModalCrear()">+ Nueva Colección</button>
+    </div>
+
+    <div class="cargando" id="estadoCargando">Cargando colecciones...</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty">
+        <p>Todavía no tienes ninguna colección</p>
+        <button class="btn-nueva-col" onclick="abrirModalCrear()">Crear mi primera colección</button>
+    </div>
+
+</div>
+
+<!-- Modal crear -->
+<div class="overlay" id="overlayCrear">
+    <div class="modal" style="max-width: 500px;">
+        <button class="cerrar" onclick="cerrar('overlayCrear')">✕</button>
+        <h2>Nueva Colección</h2>
+        
+        <label>Nombre de la colección *</label>
+        <input type="text" id="crearNombre" placeholder="Ej: Cartas Raras Base Set" maxlength="100">
+        
+        <label style="margin-top: 16px;">Buscar primera carta (opcional)</label>
+        <div style="position: relative; margin-bottom: 12px;">
+            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem;">🔍</span>
+            <input type="text" id="inputBuscaCol" placeholder="Escribe el nombre de la carta..." autocomplete="off" 
+                   style="width: 100%; padding: 12px 16px 12px 42px; border: 2px solid #EEE; border-radius: 12px; font-size: 0.95rem; outline: none; color: #333; transition: border-color 0.2s; background: #FAFAFA;">
+        </div>
+        <div id="dropdownCol" style="background: white; border: 2px solid #EEE; border-radius: 12px; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-bottom: 12px;"></div>
+        
+        <div id="cartaSeleccionadaCol" style="display: none; align-items: center; gap: 12px; background: #E1F5FE; border: 2px solid #7AACCF; border-radius: 12px; padding: 11px 16px; margin-bottom: 12px;">
+            <span id="selEmojiCol" style="font-size: 1.5rem;">🃏</span>
+            <div style="flex: 1;">
+                <div id="selNombreCol" style="font-weight: bold; font-size: 0.9rem; color: #0369A1;">—</div>
+                <div id="selRarezaCol" style="font-size: 0.75rem; color: #7AACCF; margin-top: 2px;">—</div>
+            </div>
+            <button onclick="limpiarCol()" style="background: none; border: none; cursor: pointer; color: #AAA; font-size: 1rem; transition: color 0.2s; padding: 4px;">✕</button>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrar('overlayCrear')">Cancelar</button>
+            <button class="btn-ok" onclick="crearColeccion()">✓ Crear</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminar -->
+<div class="overlay" id="overlayEliminar">
+    <div class="modal">
+        <button class="cerrar" onclick="cerrar('overlayEliminar')">✕</button>
+        <h2>Eliminar Colección</h2>
+        <p class="confirm-texto">
+            ¿Estás seguro de que quieres eliminar la colección
+            <span class="confirm-nombre" id="eliminarNombre"></span>?<br><br>
+            Esta acción no se puede deshacer.
+        </p>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrar('overlayEliminar')">Cancelar</button>
+            <button class="btn-eliminar-ok" onclick="confirmarEliminar()">🗑 Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api';
+let coleccionAEliminar = null;
+const EMOJIS  = ['📚','🃏','⭐','🏆','💎','🔥','❄️','⚡','🌊','🌿'];
+const BANNERS = 5;
+
+// ── BÚSQUEDA DE CARTAS ──
+const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
+let cartaSeleccionadaCol = null;
+let timerCol = null;
+
+const inputCol = document.getElementById('inputBuscaCol');
+const dropdownCol = document.getElementById('dropdownCol');
+
+if (inputCol) {
+    inputCol.addEventListener('input', () => {
+        clearTimeout(timerCol);
+        const q = inputCol.value.trim();
+        if (q.length < 2) { cerrarDropdownCol(); return; }
+        timerCol = setTimeout(() => buscarCol(q), 350);
+    });
+
+    document.addEventListener('click', e => {
+        if (!inputCol.contains(e.target) && !dropdownCol.contains(e.target)) cerrarDropdownCol();
+    });
+}
+
+async function buscarCol(q) {
+    dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA; font-size: 0.85rem;">Buscando...</div>';
+    dropdownCol.style.display = 'block';
+    try {
+        const res = await fetch(`/api/cartas/buscar?nombre=${encodeURIComponent(q)}`);
+        const cartas = await res.json();
+        if (!cartas.length) { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Sin resultados</div>'; return; }
+        dropdownCol.innerHTML = cartas.slice(0, 10).map(c => {
+            const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
+            return `<div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer; border-bottom: 2px solid #F8F8F8; transition: background 0.15s;" onmouseover="this.style.background='#F0F8FF'" onmouseout="this.style.background='white'" onclick="seleccionarCol(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}','${esc(c.set||'')}')">
+                <div style="font-size: 1.3rem; width: 32px; text-align: center; flex-shrink: 0;">${emoji}</div>
+                <div>
+                    <div style="font-weight: bold; font-size: 0.88rem; color: #333;">${c.nombre}</div>
+                    <div style="font-size: 0.75rem; color: #AAA; margin-top: 1px;">${(c.rareza||'COMUN').replace('_',' ')}${c.set?' · '+c.set:''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Error al buscar</div>'; }
+}
+
+function seleccionarCol(id, nombre, rareza, set) {
+    cartaSeleccionadaCol = { id, nombre, rareza };
+    inputCol.value = nombre;
+    cerrarDropdownCol();
+    document.getElementById('selEmojiCol').textContent = RAREZA_EMOJI[rareza] || '🃏';
+    document.getElementById('selNombreCol').textContent = nombre;
+    document.getElementById('selRarezaCol').textContent = rareza.replace('_',' ') + (set ? ' · ' + set : '');
+    document.getElementById('cartaSeleccionadaCol').style.display = 'flex';
+}
+
+function limpiarCol() {
+    cartaSeleccionadaCol = null;
+    inputCol.value = '';
+    document.getElementById('cartaSeleccionadaCol').style.display = 'none';
+}
+
+function cerrarDropdownCol() { dropdownCol.style.display = 'none'; dropdownCol.innerHTML = ''; }
+
+async function cargarColecciones() {
+    const userId = document.getElementById('userId').value;
+    if (!userId) return toast('Introduce tu ID de usuario', false);
+
+    document.getElementById('estadoCargando').style.display = 'block';
+    document.getElementById('grid').innerHTML = '';
+    document.getElementById('empty').style.display = 'none';
+
+    try {
+        const res = await fetch(`${API}/colecciones/usuario/${userId}`);
+        if (!res.ok) throw new Error();
+        const colecciones = await res.json();
+        document.getElementById('estadoCargando').style.display = 'none';
+        document.getElementById('statTotal').textContent = colecciones.length;
+        renderGrid(colecciones);
+    } catch {
+        document.getElementById('estadoCargando').style.display = 'none';
+        toast('Error al conectar con el servidor', false);
+    }
+}
+
+function renderGrid(colecciones) {
+    const grid  = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    if (!colecciones.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = colecciones.map((c, i) => `
+        <div class="coleccion-card" id="col-${c.id}">
+            <div class="coleccion-banner coleccion-banner-${i % BANNERS}">
+                ${EMOJIS[i % EMOJIS.length]}
+            </div>
+            <div class="coleccion-cuerpo">
+                <div class="coleccion-nombre">${c.nombre}</div>
+                <div class="coleccion-fecha">📅 ${formatFecha(c.creadaEn)}</div>
+                <div class="coleccion-id">ID: ${c.id}</div>
+            </div>
+            <div class="coleccion-footer">
+                <button class="btn-eliminar" onclick="pedirEliminar(${c.id}, '${esc(c.nombre)}')">
+                    🗑 Eliminar
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function abrirModalCrear() {
+    document.getElementById('crearNombre').value = '';
+    limpiarCol();
+    document.getElementById('overlayCrear').classList.add('open');
+    setTimeout(() => document.getElementById('crearNombre').focus(), 100);
+}
+
+async function crearColeccion() {
+    const userId = document.getElementById('userId').value;
+    const nombre = document.getElementById('crearNombre').value.trim();
+    if (!userId) return toast('Introduce tu ID de usuario primero', false);
+    if (!nombre) return toast('El nombre es obligatorio', false);
+    try {
+        const res = await fetch(`${API}/colecciones/${userId}?nombre=${encodeURIComponent(nombre)}`, { method:'POST' });
+        if (res.ok) { toast('Colección creada ✓', true); cerrar('overlayCrear'); cargarColecciones(); }
+        else { const err = await res.json().catch(()=>{}); toast(err?.mensaje || 'Error al crear', false); }
+    } catch { toast('Error de conexión', false); }
+}
+
+function pedirEliminar(id, nombre) {
+    coleccionAEliminar = id;
+    document.getElementById('eliminarNombre').textContent = `"${nombre}"`;
+    document.getElementById('overlayEliminar').classList.add('open');
+}
+
+async function confirmarEliminar() {
+    if (!coleccionAEliminar) return;
+    try {
+        const res = await fetch(`${API}/colecciones/${coleccionAEliminar}`, { method:'DELETE' });
+        if (res.ok) {
+            toast('Colección eliminada', true);
+            cerrar('overlayEliminar');
+            const el = document.getElementById('col-' + coleccionAEliminar);
+            if (el) { el.style.opacity='0'; el.style.transform='scale(.95)'; el.style.transition='.3s'; }
+            setTimeout(cargarColecciones, 350);
+        } else { const err = await res.json().catch(()=>{}); toast(err?.mensaje || 'Error al eliminar', false); }
+    } catch { toast('Error de conexión', false); }
+}
+
+function cerrar(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+
+function formatFecha(fecha) {
+    if (!fecha) return 'Fecha desconocida';
+    return new Date(fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+}
+function esc(str) { return (str||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function toast(msg, ok=true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (ok ? ' ok' : ' err');
+    setTimeout(() => t.className = 'toast', 3000);
+}
+
+window.addEventListener('load', () => { if (document.getElementById('userId').value) cargarColecciones(); });
+</script>
+</body>
+</html>

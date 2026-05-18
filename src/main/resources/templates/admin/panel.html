@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin - PokeApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .stat-card { border-radius: 16px; border: none; }
+        .topbar { background: #cc0000; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; }
+        .topbar a:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <span>🛡️ Panel de Administración — PokeApp</span>
+    <div style="display:flex; gap:16px;">
+        <a th:href="@{/web/home}">← Inicio</a>
+        <a th:href="@{/web/logout}">Cerrar sesión</a>
+    </div>
+</div>
+
+<div class="container py-4">
+    <h4 class="mb-1 text-muted">Bienvenido, <strong th:text="${username}"></strong></h4>
+    <h2 class="mb-4">Resumen general</h2>
+
+    <!-- Estadísticas -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card text-white bg-primary p-3 text-center">
+                <h2 th:text="${totalUsuarios}">0</h2>
+                <p class="mb-0">👥 Usuarios totales</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-white bg-danger p-3 text-center">
+                <h2 th:text="${totalAdmins}">0</h2>
+                <p class="mb-0">🛡️ Administradores</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-white bg-success p-3 text-center">
+                <h2 th:text="${ventasCompletadas}">0</h2>
+                <p class="mb-0">✅ Ventas completadas</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-white bg-warning p-3 text-center">
+                <h2 th:text="${totalValoraciones}">0</h2>
+                <p class="mb-0">⭐ Valoraciones</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top cartas y usuarios -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>🏷️ Cartas más vendidas</h5>
+                <ul class="list-group list-group-flush mt-2">
+                    <li class="list-group-item d-flex justify-content-between"
+                        th:each="entry : ${cartasMasVendidas}">
+                        <span th:text="${entry.key}"></span>
+                        <span class="badge bg-success" th:text="${entry.value} + ' ventas'"></span>
+                    </li>
+                    <li class="list-group-item text-muted" th:if="${#maps.isEmpty(cartasMasVendidas)}">Sin datos aún</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>🏆 Usuarios más activos</h5>
+                <ul class="list-group list-group-flush mt-2">
+                    <li class="list-group-item d-flex justify-content-between"
+                        th:each="entry : ${usuariosMasActivos}">
+                        <span th:text="${entry.key}"></span>
+                        <span class="badge bg-primary" th:text="${entry.value} + ' ventas'"></span>
+                    </li>
+                    <li class="list-group-item text-muted" th:if="${#maps.isEmpty(usuariosMasActivos)}">Sin datos aún</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <h5 class="mb-3">Gestión</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <a href="/web/admin/usuarios" class="btn btn-outline-primary w-100 py-3">👥 Usuarios</a>
+        </div>
+        <div class="col-md-3">
+            <a href="/web/admin/cartas" class="btn btn-outline-dark w-100 py-3">🃏 Cartas</a>
+        </div>
+        <div class="col-md-3">
+            <a href="/web/admin/valoraciones" class="btn btn-outline-warning w-100 py-3">⭐ Valoraciones</a>
+        </div>
+        <div class="col-md-3">
+            <a href="/web/admin/ventas" class="btn btn-outline-success w-100 py-3">🏷️ Ventas</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

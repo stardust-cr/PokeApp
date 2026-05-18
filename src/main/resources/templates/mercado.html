@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mercado — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.4rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .nav-links { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .nav-links a {
+            color:white; text-decoration:none; font-weight:bold; font-size:0.88rem;
+            background:rgba(0,0,0,0.1); padding:8px 14px; border-radius:10px; transition:0.2s;
+        }
+        .nav-links a:hover { background:rgba(0,0,0,0.22); }
+
+        /* ── BANNER HERO ── */
+        .hero {
+            background: linear-gradient(135deg, #E63946, #FF8A8A);
+            color: white; padding: 36px 24px; text-align: center;
+        }
+        .hero h1 { font-size: 1.8rem; margin-bottom: 6px; -webkit-text-stroke: 1px rgba(0,0,0,0.2); }
+        .hero p  { opacity: 0.9; font-size: 0.95rem; margin-bottom: 20px; }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
+        }
+        .hero-stat {
+            background: rgba(255,255,255,0.2); border-radius: 16px;
+            padding: 12px 22px; text-align: center; min-width: 100px;
+        }
+        .hero-stat-num { font-size: 1.6rem; font-weight: bold; display: block; }
+        .hero-stat-lbl { font-size: 0.75rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ── CONTENEDOR ── */
+        .container { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
+
+        /* ── FILTROS ── */
+        .filtros {
+            background: white; border-radius: 20px; padding: 18px 20px;
+            border: 3px solid #EEE; box-shadow: 0 4px 0 #F0F0F0;
+            margin-bottom: 24px;
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
+        }
+        .filtro-grupo { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+        .filtro-grupo label { font-size: 0.78rem; color: #AAA; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .filtro-grupo input,
+        .filtro-grupo select {
+            padding: 10px 12px; border: 2px solid #EEE; border-radius: 12px;
+            font-size: 0.9rem; color: #333; outline: none; transition: border-color 0.2s;
+            background: #FAFAFA;
+        }
+        .filtro-grupo input:focus,
+        .filtro-grupo select:focus { border-color: #FF8A8A; background: white; }
+        .btn-filtrar {
+            background: #FF8A8A; color: white; border: none;
+            border-radius: 12px; padding: 10px 20px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #E57373;
+            transition: all 0.2s; font-size: 0.9rem; align-self: flex-end;
+        }
+        .btn-filtrar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #E57373; }
+
+        /* ── SECCIÓN HEADER ── */
+        .seccion-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+        }
+        .seccion-titulo { font-size: 1.05rem; font-weight: bold; color: #555; }
+        .seccion-count  { color: #AAA; font-size: 0.85rem; }
+        .btn-vender {
+            background: #BAE6FD; color: #0369A1; border: none;
+            border-radius: 14px; padding: 10px 20px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #7DD3FC;
+            transition: all 0.2s; font-size: 0.9rem; text-decoration: none;
+        }
+        .btn-vender:hover { transform: translateY(2px); box-shadow: 0 2px 0 #7DD3FC; }
+
+        /* ── GRID CARTAS ── */
+        .grid-cartas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        /* ── CARTA CARD ── */
+        .carta-card {
+            background: white; border-radius: 22px; overflow: hidden;
+            border: 3px solid #FF8A8A; box-shadow: 0 5px 0 #FFD1D1;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; flex-direction: column;
+        }
+        .carta-card:hover { transform: translateY(-5px); box-shadow: 0 10px 0 #FFD1D1; }
+        .carta-banner {
+            background: linear-gradient(135deg, #FFF9C4, #FDE68A);
+            padding: 20px; text-align: center; font-size: 2.5rem; position: relative;
+        }
+        .rareza-badge {
+            position: absolute; top: 10px; right: 10px;
+            padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: bold;
+            border: 2px solid;
+        }
+        .rareza-COMUN       { background:#F5F5F5; color:#666; border-color:#DDD; }
+        .rareza-POCO_COMUN  { background:#E8F5E9; color:#2E7D32; border-color:#B3E5BE; }
+        .rareza-RARA        { background:#E3F2FD; color:#1565C0; border-color:#B3D4F5; }
+        .rareza-ULTRA_RARA  { background:#FFF9C4; color:#78650A; border-color:#FDE68A; }
+        .rareza-SECRETA     { background:#F3E5F5; color:#6A1B9A; border-color:#CE93D8; }
+        .rareza-RAINBOW     { background:linear-gradient(135deg,#FFD1E8,#D1D1FF); color:#4A1A70; border-color:#CE93D8; }
+
+        .carta-body { padding: 16px; flex: 1; }
+        .carta-nombre { font-weight: bold; font-size: 1rem; color: #333; margin-bottom: 4px; }
+        .carta-set    { font-size: 0.8rem; color: #AAA; margin-bottom: 10px; }
+        .carta-precio {
+            font-size: 1.2rem; font-weight: bold; color: #E63946;
+            margin-bottom: 4px;
+        }
+        .carta-tipo-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 50px;
+            font-size: 0.72rem; font-weight: bold;
+        }
+        .tipo-VENTA   { background:#E3F2FD; color:#1E88E5; }
+        .tipo-TRUEQUE { background:#F3E5F5; color:#8E24AA; }
+
+        .carta-vendedor { font-size: 0.8rem; color: #AAA; margin-top: 8px; }
+
+        .carta-footer { padding: 12px 16px; border-top: 2px solid #FEE; display:flex; gap:8px; }
+        .btn-comprar {
+            flex:1; background:#FF8A8A; color:white; border:none;
+            border-radius:12px; padding:10px; font-weight:bold;
+            cursor:pointer; box-shadow:0 4px 0 #E57373; transition:all 0.2s; font-size:0.88rem;
+        }
+        .btn-comprar:hover { transform:translateY(2px); box-shadow:0 2px 0 #E57373; }
+        .btn-wishlist {
+            background:white; color:#E63946; border:2px solid #FFB3B3;
+            border-radius:12px; padding:10px 12px; cursor:pointer; font-size:1rem;
+            transition:0.2s;
+        }
+        .btn-wishlist:hover { background:#FEE2E2; }
+
+        /* ── VACÍO / CARGANDO ── */
+        .estado-grid { text-align:center; padding:50px 20px; color:#CCC; }
+        .estado-grid .icono { font-size:2.5rem; margin-bottom:14px; }
+        .estado-grid h3 { color:#BBB; font-size:1rem; margin-bottom:6px; }
+
+        /* ── TOAST ── */
+        .toast {
+            position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+            padding:12px 28px; color:white; font-weight:bold; border-radius:50px;
+            display:none; z-index:2000; font-size:0.9rem;
+        }
+        .toast.visible { display:block; }
+        .toast.exito { background:#81C784; }
+        .toast.error { background:#E57373; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Mercado
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/web/home}">Inicio</a>
+        <a th:href="@{/web/mercado/mis-compras}">Mis Compras</a>
+        <a th:href="@{/web/mercado/mis-ventas}">Mis Ventas</a>
+        <a th:href="@{/web/logout}">Salir</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <h1>🏪 Mercado Pokémon</h1>
+    <p>Compra, vende e intercambia cartas con otros entrenadores</p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <span class="hero-stat-num" id="statTotal">—</span>
+            <span class="hero-stat-lbl">Anuncios</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-num" id="statVentas">—</span>
+            <span class="hero-stat-lbl">Ventas</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-num" id="statTrueques">—</span>
+            <span class="hero-stat-lbl">Trueques</span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Filtros -->
+    <div class="filtros">
+        <div class="filtro-grupo">
+            <label>Buscar carta</label>
+            <input type="text" id="filtroBusqueda" placeholder="Nombre de carta...">
+        </div>
+        <div class="filtro-grupo">
+            <label>Tipo</label>
+            <select id="filtroTipo">
+                <option value="">Todos</option>
+                <option value="VENTA">Venta</option>
+                <option value="TRUEQUE">Trueque</option>
+            </select>
+        </div>
+        <div class="filtro-grupo">
+            <label>Rareza</label>
+            <select id="filtroRareza">
+                <option value="">Todas</option>
+                <option value="COMUN">Común</option>
+                <option value="POCO_COMUN">Poco común</option>
+                <option value="RARA">Rara</option>
+                <option value="ULTRA_RARA">Ultra rara</option>
+                <option value="SECRETA">Secreta</option>
+                <option value="RAINBOW">Rainbow</option>
+            </select>
+        </div>
+        <div class="filtro-grupo">
+            <label>Precio máx. (€)</label>
+            <input type="number" id="filtroPrecio" placeholder="Sin límite" min="0">
+        </div>
+        <button class="btn-filtrar" onclick="aplicarFiltros()">🔍 Filtrar</button>
+    </div>
+
+    <!-- Header -->
+    <div class="seccion-header">
+        <div>
+            <div class="seccion-titulo">Anuncios disponibles</div>
+            <div class="seccion-count" id="countAnuncios">Cargando...</div>
+        </div>
+        <a th:href="@{/web/venta/nueva}" class="btn-vender">+ Poner en venta</a>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-cartas" id="gridCartas">
+        <div class="estado-grid" style="grid-column:1/-1">
+            <div class="icono">⏳</div>
+            <h3>Cargando anuncios...</h3>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script th:inline="javascript">
+    const USUARIO_ID  = /*[[${usuarioId}]]*/ 1;
+    const API_MERCADO = '/api/mercado';
+
+    const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
+    let todasVentas = [];
+
+    async function cargarMercado() {
+        try {
+            const res = await fetch(`${API_MERCADO}/activas`);
+            todasVentas = await res.json();
+            actualizarStats();
+            renderGrid(todasVentas);
+        } catch {
+            document.getElementById('gridCartas').innerHTML =
+                '<div class="estado-grid" style="grid-column:1/-1"><div class="icono">⚠️</div><h3>Error al cargar el mercado</h3></div>';
+        }
+    }
+
+    function actualizarStats() {
+        document.getElementById('statTotal').textContent    = todasVentas.length;
+        document.getElementById('statVentas').textContent   = todasVentas.filter(v=>v.tipo==='VENTA').length;
+        document.getElementById('statTrueques').textContent = todasVentas.filter(v=>v.tipo==='TRUEQUE').length;
+    }
+
+    function renderGrid(ventas) {
+        const grid = document.getElementById('gridCartas');
+        document.getElementById('countAnuncios').textContent = `${ventas.length} anuncio${ventas.length!==1?'s':''}`;
+        if (!ventas.length) {
+            grid.innerHTML = '<div class="estado-grid" style="grid-column:1/-1"><div class="icono">🔍</div><h3>No hay anuncios con esos filtros</h3></div>';
+            return;
+        }
+        grid.innerHTML = ventas.map(v => {
+            const emoji = RAREZA_EMOJI[v.cartaRareza] || '🃏';
+            const esTrueque = v.tipo === 'TRUEQUE';
+            return `
+            <div class="carta-card">
+                <div class="carta-banner">
+                    ${emoji}
+                    <span class="rareza-badge rareza-${v.cartaRareza || 'COMUN'}">${(v.cartaRareza||'COMUN').replace('_',' ')}</span>
+                </div>
+                <div class="carta-body">
+                    <div class="carta-nombre">${v.cartaNombre || 'Carta #'+v.cartaId}</div>
+                    <div class="carta-set">${v.cartaSet || ''}</div>
+                    <div class="carta-precio">${esTrueque ? '🔄 Trueque' : (v.precio ? '€'+parseFloat(v.precio).toFixed(2) : '—')}</div>
+                    <span class="carta-tipo-badge tipo-${v.tipo}">${v.tipo}</span>
+                    <div class="carta-vendedor">Vendedor: ${v.vendedorNombre || 'Desconocido'}</div>
+                </div>
+                <div class="carta-footer">
+                    <button class="btn-comprar" onclick="comprar(${v.id})">
+                        ${esTrueque ? '🔄 Proponer trueque' : '🛒 Comprar'}
+                    </button>
+                    <button class="btn-wishlist" title="Añadir a wishlist" onclick="addWishlist(${v.cartaId})">♡</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function aplicarFiltros() {
+        const busqueda = document.getElementById('filtroBusqueda').value.toLowerCase().trim();
+        const tipo     = document.getElementById('filtroTipo').value;
+        const rareza   = document.getElementById('filtroRareza').value;
+        const precioMax= parseFloat(document.getElementById('filtroPrecio').value) || Infinity;
+
+        const filtradas = todasVentas.filter(v => {
+            const nombreOk  = !busqueda || (v.cartaNombre||'').toLowerCase().includes(busqueda);
+            const tipoOk    = !tipo     || v.tipo === tipo;
+            const rarezaOk  = !rareza   || v.cartaRareza === rareza;
+            const precioOk  = v.tipo === 'TRUEQUE' || !v.precio || parseFloat(v.precio) <= precioMax;
+            return nombreOk && tipoOk && rarezaOk && precioOk;
+        });
+        renderGrid(filtradas);
+    }
+
+    async function comprar(ventaId) {
+        try {
+            const res = await fetch(`${API_MERCADO}/comprar`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ ventaId, compradorId: USUARIO_ID })
+            });
+            if (res.ok) { mostrarToast('¡Compra realizada! 🎉','exito'); cargarMercado(); }
+            else { const e = await res.text(); mostrarToast('Error: '+e,'error'); }
+        } catch { mostrarToast('Error de red','error'); }
+    }
+
+    async function addWishlist(cartaId) {
+        try {
+            const res = await fetch(`/api/wishlist`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ usuarioId: USUARIO_ID, cartaId })
+            });
+            if (res.ok) mostrarToast('Añadido a tu wishlist ⭐','exito');
+            else mostrarToast('No se pudo añadir','error');
+        } catch { mostrarToast('Error de red','error'); }
+    }
+
+    function mostrarToast(msg, tipo='exito') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = `toast ${tipo} visible`;
+        setTimeout(() => t.classList.remove('visible'), 3000);
+    }
+
+    document.getElementById('filtroBusqueda').addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroRareza').addEventListener('change', aplicarFiltros);
+
+    cargarMercado();
+</script>
+</body>
+</html>

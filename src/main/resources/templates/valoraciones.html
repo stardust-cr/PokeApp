@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Valoraciones — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.3rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .back-btn {
+            color:white; text-decoration:none; font-weight:bold;
+            background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px;
+            font-size:0.9rem; transition:background 0.2s;
+        }
+        .back-btn:hover { background:rgba(255,255,255,0.35); }
+
+        /* ── CONTENEDOR ── */
+        .container { max-width: 820px; margin: 32px auto; padding: 0 20px; }
+
+        /* ── PERFIL HEADER ── */
+        .perfil-header {
+            display: flex; align-items: center; gap: 20px;
+            background: white; border-radius: 25px;
+            box-shadow: 0 8px 0 #E6E6FF; border: 4px solid #D1D1FF;
+            padding: 24px 28px; margin-bottom: 20px;
+        }
+        .perfil-avatar {
+            width: 72px; height: 72px; background: #FFD1D1; color: #A04070;
+            font-size: 2rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; border: 4px solid white;
+            box-shadow: 0 0 0 4px #FFD1D1; flex-shrink: 0;
+        }
+        .perfil-nombre { font-size: 1.2rem; font-weight: bold; color: #333; }
+        .perfil-sub    { font-size: 0.85rem; color: #AAA; margin-top: 3px; }
+
+        /* ── STATS ── */
+        .perfil-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px; margin-bottom: 28px;
+        }
+        .perfil-stat {
+            background: white; padding: 18px 20px;
+            border-radius: 20px; border: 3px solid #EEE;
+            text-align: center; box-shadow: 0 4px 0 #F0F0F0;
+        }
+        .perfil-stat-num  { font-size: 1.6rem; font-weight: bold; color: #7B7BFF; display: block; margin-bottom: 4px; }
+        .estrellas-media  { font-size: 1rem; color: #FFD700; margin-bottom: 2px; }
+        .perfil-stat-lbl  { color: #AAA; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ── FORM VALORAR ── */
+        .form-valorar {
+            background: white; padding: 24px; border-radius: 22px;
+            border: 3px solid #D1D1FF; box-shadow: 0 6px 0 #E6E6FF;
+            margin-bottom: 24px;
+        }
+        .form-valorar h3 { font-size: 1.05rem; color: #555; margin-bottom: 16px; }
+        .estrellas-input { display: flex; gap: 4px; margin-bottom: 14px; }
+        .estrella-btn {
+            background: none; border: none; font-size: 1.8rem;
+            cursor: pointer; color: #DDD; transition: 0.15s;
+            line-height: 1;
+        }
+        .estrella-btn.activa { color: #FFD700; }
+        .estrella-btn:hover  { transform: scale(1.2); }
+        .form-grupo { margin-bottom: 12px; }
+        .form-grupo label { display: block; font-size: 0.85rem; color: #888; font-weight: bold; margin-bottom: 6px; }
+        .form-grupo select,
+        .form-grupo textarea {
+            width: 100%; padding: 10px 12px; border: 2px solid #EEE;
+            border-radius: 12px; font-family: inherit; font-size: 0.9rem; color: #333;
+            outline: none; transition: border-color 0.2s;
+        }
+        .form-grupo select:focus,
+        .form-grupo textarea:focus { border-color: #D1D1FF; }
+        .form-grupo textarea { height: 80px; resize: none; }
+        .btn-enviar-val {
+            background: #D1D1FF; color: #4A4A8A; border: none;
+            padding: 11px 22px; border-radius: 12px; cursor: pointer;
+            font-weight: bold; box-shadow: 0 4px 0 #B9B9FF;
+            transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-enviar-val:hover { transform: translateY(2px); box-shadow: 0 2px 0 #B9B9FF; }
+
+        /* ── SECCION TITULO ── */
+        .seccion-titulo {
+            font-size: 1rem; font-weight: bold; color: #7B7BFF;
+            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .count-badge {
+            color: #AAA; font-weight: normal; font-size: 0.82rem;
+        }
+
+        /* ── VAL CARD ── */
+        .val-card {
+            background: white; padding: 18px 20px; border-radius: 18px;
+            margin-bottom: 12px; border-left: 6px solid #D1D1FF;
+            box-shadow: 0 3px 0 #F0F0F0;
+        }
+        .val-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+        }
+        .val-autor { display: flex; align-items: center; gap: 10px; }
+        .val-avatar {
+            width: 36px; height: 36px; background: #D1D1FF; color: #4A4A8A;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem; flex-shrink: 0;
+        }
+        .val-nombre { font-weight: bold; font-size: 0.9rem; color: #333; }
+        .val-fecha  { font-size: 0.78rem; color: #BBB; margin-top: 1px; }
+        .val-estrellas { font-size: 1rem; color: #FFD700; }
+        .val-comentario {
+            font-size: 0.88rem; color: #555; font-style: italic;
+            background: #FAFAFA; border-radius: 10px; padding: 10px 12px;
+            margin-top: 8px; border: 2px solid #EEE; line-height: 1.5;
+        }
+        .val-carta { font-size: 0.78rem; color: #AAA; margin-top: 6px; }
+
+        /* ── VACÍO ── */
+        .vacio { text-align: center; padding: 40px; color: #CCC; }
+        .vacio h3 { font-size: 1rem; margin-bottom: 6px; }
+        .vacio p  { font-size: 0.85rem; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            padding: 12px 28px; color: white; font-weight: bold; border-radius: 50px;
+            display: none; z-index: 2000; font-size: 0.9rem;
+        }
+        .toast.visible { display: block; }
+        .toast.ok  { background: #81C784; }
+        .toast.err { background: #E57373; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Valoraciones
+    </a>
+    <a th:href="@{/web/home}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="container">
+
+    <!-- Perfil del vendedor -->
+    <div class="perfil-header">
+        <div class="perfil-avatar" id="avatarLetra">?</div>
+        <div>
+            <div class="perfil-nombre" id="perfilNombre">Cargando...</div>
+            <div class="perfil-sub">Vendedor en PokeApp</div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="perfil-stats">
+        <div class="perfil-stat">
+            <span class="perfil-stat-num" id="totalValoraciones">0</span>
+            <div class="perfil-stat-lbl">Valoraciones</div>
+        </div>
+        <div class="perfil-stat">
+            <span class="perfil-stat-num" id="mediaNum">—</span>
+            <div class="estrellas-media" id="estrellaMedia"></div>
+            <div class="perfil-stat-lbl">Puntuación media</div>
+        </div>
+        <div class="perfil-stat">
+            <span class="perfil-stat-num" id="pctPositivas">—</span>
+            <div class="perfil-stat-lbl">% positivas</div>
+        </div>
+    </div>
+
+    <!-- Formulario valorar -->
+    <div class="form-valorar" id="formValorar" style="display:none">
+        <h3>✍️ Dejar una valoración</h3>
+        <div class="estrellas-input">
+            <button class="estrella-btn" onclick="selEstrellas(1)" id="s1">★</button>
+            <button class="estrella-btn" onclick="selEstrellas(2)" id="s2">★</button>
+            <button class="estrella-btn" onclick="selEstrellas(3)" id="s3">★</button>
+            <button class="estrella-btn" onclick="selEstrellas(4)" id="s4">★</button>
+            <button class="estrella-btn" onclick="selEstrellas(5)" id="s5">★</button>
+        </div>
+        <div class="form-grupo">
+            <label>Venta a valorar</label>
+            <select id="ventaIdSelect"></select>
+        </div>
+        <div class="form-grupo">
+            <label>Comentario <span style="color:#CCC;font-weight:normal">(opcional)</span></label>
+            <textarea id="comentario" placeholder="Describe tu experiencia..."></textarea>
+        </div>
+        <button class="btn-enviar-val" onclick="enviarValoracion()">Enviar valoración</button>
+    </div>
+
+    <!-- Lista de valoraciones -->
+    <div class="seccion-titulo">
+        Opiniones recibidas
+        <span class="count-badge" id="countValoraciones"></span>
+    </div>
+    <div id="listaValoraciones">
+        <div class="vacio"><h3>Cargando...</h3></div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script th:inline="javascript">
+    const VENDEDOR_ID = /*[[${vendedorId}]]*/ null;
+    const USUARIO_ID  = /*[[${usuarioId}]]*/ null;
+    let puntuacionSeleccionada = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!VENDEDOR_ID) {
+            document.getElementById('listaValoraciones').innerHTML =
+                '<div class="vacio"><h3>Vendedor no especificado</h3></div>';
+            return;
+        }
+        cargarValoraciones();
+        cargarDatosVendedor();
+        comprobarSiPuedeValorar();
+    });
+
+    function cargarValoraciones() {
+        fetch(`/api/mercado/valoraciones/vendedor/${VENDEDOR_ID}`)
+            .then(r => r.json())
+            .then(data => renderValoraciones(data))
+            .catch(() => {
+                document.getElementById('listaValoraciones').innerHTML =
+                    '<div class="vacio"><h3>Error al cargar valoraciones</h3></div>';
+            });
+    }
+
+    function renderValoraciones(lista) {
+        const el = document.getElementById('listaValoraciones');
+        document.getElementById('countValoraciones').textContent = `(${lista.length})`;
+        if (!lista.length) {
+            el.innerHTML = '<div class="vacio"><h3>Sin valoraciones todavía</h3><p>Sé el primero en valorar a este vendedor</p></div>';
+            actualizarStats(0, 0, 0); return;
+        }
+        const media = lista.reduce((s,v) => s+(v.puntuacion||0), 0) / lista.length;
+        const pct   = Math.round(lista.filter(v => (v.puntuacion||0) >= 4).length / lista.length * 100);
+        actualizarStats(lista.length, media, pct);
+
+        el.innerHTML = lista.map(v => {
+            const estrellas = '⭐'.repeat(v.puntuacion||0) + '☆'.repeat(5-(v.puntuacion||0));
+            const fecha     = v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : '—';
+            const autor     = v.usuario?.username || 'Anónimo';
+            const cartaNombre = v.venta?.carta?.nombre || v.venta?.cartaNombre || '';
+            return `
+            <div class="val-card">
+                <div class="val-header">
+                    <div class="val-autor">
+                        <div class="val-avatar">${autor.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div class="val-nombre">${autor}</div>
+                            <div class="val-fecha">${fecha}</div>
+                        </div>
+                    </div>
+                    <div class="val-estrellas">${estrellas}</div>
+                </div>
+                ${v.comentario ? `<div class="val-comentario">"${v.comentario}"</div>` : ''}
+                ${cartaNombre ? `<div class="val-carta">📦 Carta: ${cartaNombre}</div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    function actualizarStats(total, media, pct) {
+        document.getElementById('totalValoraciones').textContent = total;
+        document.getElementById('mediaNum').textContent = total ? media.toFixed(1) : '—';
+        document.getElementById('pctPositivas').textContent = total ? pct+'%' : '—';
+        if (total) {
+            const llenas = Math.round(media);
+            document.getElementById('estrellaMedia').innerHTML = '⭐'.repeat(llenas) + '☆'.repeat(5-llenas);
+        }
+    }
+
+    function cargarDatosVendedor() {
+        fetch(`/api/mercado/usuario/${VENDEDOR_ID}`)
+            .then(r => r.json())
+            .then(ventas => {
+                const nombre = ventas.length ? ventas[0].vendedorNombre : `Vendedor #${VENDEDOR_ID}`;
+                document.getElementById('perfilNombre').textContent = nombre;
+                document.getElementById('avatarLetra').textContent  = nombre.charAt(0).toUpperCase();
+            })
+            .catch(() => {
+                document.getElementById('perfilNombre').textContent = `Vendedor #${VENDEDOR_ID}`;
+                document.getElementById('avatarLetra').textContent  = '?';
+            });
+    }
+
+    function comprobarSiPuedeValorar() {
+        if (!USUARIO_ID || String(USUARIO_ID) === String(VENDEDOR_ID)) return;
+        fetch(`/api/mercado/compras/${USUARIO_ID}`)
+            .then(r => r.json())
+            .then(compras => {
+                const elegibles = compras.filter(c =>
+                    String(c.vendedorId) === String(VENDEDOR_ID) && c.estado === 'COMPLETADA'
+                );
+                if (elegibles.length) {
+                    const sel = document.getElementById('ventaIdSelect');
+                    sel.innerHTML = elegibles.map(c =>
+                        `<option value="${c.id}">Carta: ${c.cartaNombre} (ID venta: ${c.id})</option>`
+                    ).join('');
+                    document.getElementById('formValorar').style.display = 'block';
+                }
+            })
+            .catch(() => {});
+    }
+
+    function selEstrellas(n) {
+        puntuacionSeleccionada = n;
+        [1,2,3,4,5].forEach(i => document.getElementById('s'+i).classList.toggle('activa', i <= n));
+    }
+
+    function enviarValoracion() {
+        if (!puntuacionSeleccionada) { toast('Selecciona una puntuación','err'); return; }
+        const ventaId    = parseInt(document.getElementById('ventaIdSelect').value);
+        const comentario = document.getElementById('comentario').value.trim();
+        if (!ventaId) { toast('Selecciona una venta','err'); return; }
+        fetch(`/api/mercado/valorar?ventaId=${ventaId}`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ autorId: parseInt(USUARIO_ID), puntuacion: puntuacionSeleccionada, comentario })
+        })
+        .then(r => {
+            if (r.ok) { toast('¡Valoración enviada! ⭐','ok'); document.getElementById('formValorar').style.display='none'; setTimeout(cargarValoraciones, 800); }
+            else { r.text().then(e => toast('Error: '+e,'err')); }
+        })
+        .catch(() => toast('Error de red','err'));
+    }
+
+    function toast(msg, tipo='ok') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = `toast visible ${tipo}`;
+        setTimeout(() => t.className='toast', 3000);
+    }
+</script>
+</body>
+</html>

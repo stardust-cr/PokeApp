@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Verificar Email — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #E0F2F1;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: white; border-radius: 30px;
+            box-shadow: 0 10px 0 #FFD1E8; border: 4px solid #FFB3D9;
+            width: 100%; max-width: 440px; padding: 40px;
+            text-align: center; animation: fadeInUp 0.5s ease-out;
+        }
+        .card-header h1 { color: #FF6B6B; font-size: 1.7rem; margin-bottom: 8px; }
+        .card-header p  { color: #888; font-size: 0.9rem; margin-bottom: 14px; }
+        .email-destino {
+            display: inline-block; background: #FFF9C4;
+            font-weight: bold; color: #857F00;
+            padding: 5px 16px; border-radius: 50px;
+            margin-bottom: 28px; border: 2px dashed #FBC02D;
+            font-size: 0.9rem;
+        }
+        .alerta {
+            margin-bottom: 18px; padding: 12px 16px;
+            border-radius: 14px; font-size: 0.88rem; font-weight: bold;
+        }
+        .alerta.err { background: #FFCDD2; color: #C62828; border: 2px solid #EF9A9A; }
+        .alerta.ok  { background: #C8E6C9; color: #2E7D32; border: 2px solid #A5D6A7; }
+
+        /* ── CÓDIGO ── */
+        .codigo-label {
+            display: block; margin-bottom: 14px;
+            font-weight: 600; color: #555; font-size: 0.9rem;
+        }
+        .codigo-inputs {
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 22px;
+        }
+        .codigo-inputs input {
+            width: 46px; height: 56px; font-size: 1.5rem; text-align: center;
+            border-radius: 14px; border: 3px solid #B3E5FC;
+            background: #F0F8FF; color: #0277BD;
+            outline: none; transition: all 0.2s;
+        }
+        .codigo-inputs input:focus {
+            border-color: #FFB3D9; box-shadow: 0 4px 0 #FFD1E8;
+            background: white; transform: translateY(-3px);
+        }
+        .codigo-inputs input.relleno {
+            background: #E1F5FE; border-color: #4FC3F7;
+        }
+
+        /* ── TIMER ── */
+        .timer-wrap { margin-bottom: 20px; font-size: 0.88rem; color: #999; }
+        .timer { font-weight: bold; color: #4FC3F7; background: #F0F8FF; padding: 2px 10px; border-radius: 8px; }
+        .timer.agotado { color: #FF6B6B; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* ── BOTONES ── */
+        .btn-verificar {
+            width: 100%; padding: 15px; font-size: 1rem; font-weight: bold;
+            color: white; background: #FF8A8A; border: none; border-radius: 15px;
+            cursor: pointer; box-shadow: 0 5px 0 #E57373;
+            transition: all 0.2s; margin-bottom: 12px;
+        }
+        .btn-verificar:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 3px 0 #E57373; }
+        .btn-verificar:disabled { background: #E0E0E0; box-shadow: 0 5px 0 #BDBDBD; cursor: not-allowed; }
+        .btn-reenviar {
+            width: 100%; padding: 11px; font-size: 0.9rem; font-weight: bold;
+            color: #00796B; background: #E0F2F1; border: 2px solid #B2DFDB;
+            border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 18px;
+        }
+        .btn-reenviar:disabled { opacity: 0.45; cursor: default; }
+        .btn-reenviar:hover:not(:disabled) { background: #B2DFDB; }
+        .link-volver {
+            display: block; font-size: 0.88rem; color: #AAA;
+            text-decoration: none; transition: color 0.2s;
+        }
+        .link-volver:hover { color: #FF8A8A; }
+
+        /* ── SPINNER ── */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff;
+            border-radius: 50%; width: 16px; height: 16px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block; margin-right: 8px; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        <h1>Verifica tu email</h1>
+        <p>Hemos enviado un código de 6 dígitos a</p>
+        <div class="email-destino" th:text="${emailOculto}">as***@gmail.com</div>
+    </div>
+
+    <div class="alerta err" th:if="${error}" th:text="${error}"></div>
+    <div class="alerta ok"  th:if="${reenviadoOk}">Código reenviado. Revisa tu bandeja de entrada.</div>
+
+    <form th:action="@{/web/verificar-email}" method="post" id="formVerificar">
+        <label class="codigo-label">Introduce el código de verificación</label>
+        <div class="codigo-inputs">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="d1" autocomplete="off">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="d2" autocomplete="off">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="d3" autocomplete="off">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="d4" autocomplete="off">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="d5" autocomplete="off">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="d6" autocomplete="off">
+        </div>
+        <input type="hidden" name="codigo" id="codigoCompleto">
+        <div class="timer-wrap">El código caduca en <span class="timer" id="timer">10:00</span></div>
+        <button type="submit" class="btn-verificar" id="btnVerificar" disabled>Verificar cuenta</button>
+    </form>
+
+    <form th:action="@{/web/reenviar-codigo}" method="post">
+        <button type="submit" class="btn-reenviar" id="btnReenviar" disabled>Reenviar código</button>
+    </form>
+
+    <a th:href="@{/web/register}" class="link-volver">← Volver y cambiar de email</a>
+</div>
+
+<script>
+    const inputs  = ['d1','d2','d3','d4','d5','d6'].map(id => document.getElementById(id));
+    const btnVer  = document.getElementById('btnVerificar');
+    const btnRenv = document.getElementById('btnReenviar');
+
+    inputs.forEach((input, i) => {
+        input.addEventListener('input', e => {
+            const val = e.target.value.replace(/\D/g,'');
+            e.target.value = val;
+            e.target.classList.toggle('relleno', !!val);
+            if (val && i < 5) inputs[i+1].focus();
+            actualizarCodigo();
+        });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                inputs[i-1].focus();
+                inputs[i-1].value = '';
+                inputs[i-1].classList.remove('relleno');
+                actualizarCodigo();
+            }
+        });
+        input.addEventListener('paste', e => {
+            e.preventDefault();
+            const pegado = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+            if (pegado.length >= 6) {
+                inputs.forEach((inp, idx) => {
+                    inp.value = pegado[idx] || '';
+                    inp.classList.toggle('relleno', !!pegado[idx]);
+                });
+                inputs[5].focus();
+                actualizarCodigo();
+            }
+        });
+    });
+
+    function actualizarCodigo() {
+        const codigo = inputs.map(i => i.value).join('');
+        document.getElementById('codigoCompleto').value = codigo;
+        btnVer.disabled = codigo.length < 6;
+    }
+
+    document.getElementById('formVerificar').addEventListener('submit', () => {
+        btnVer.disabled = true;
+        btnVer.innerHTML = '<span class="spinner"></span>Verificando...';
+    });
+
+    let segundos = 10 * 60;
+    const timerEl = document.getElementById('timer');
+    const intervalo = setInterval(() => {
+        segundos--;
+        const m = Math.floor(segundos/60).toString().padStart(2,'0');
+        const s = (segundos%60).toString().padStart(2,'0');
+        timerEl.textContent = `${m}:${s}`;
+        if (segundos <= 60) timerEl.style.color = '#f97316';
+        if (segundos <= (10*60 - 30)) btnRenv.disabled = false;
+        if (segundos <= 0) {
+            clearInterval(intervalo);
+            timerEl.textContent = 'Expirado';
+            timerEl.classList.add('agotado');
+            btnVer.disabled = true;
+            btnRenv.disabled = false;
+        }
+    }, 1000);
+
+    inputs[0].focus();
+</script>
+</body>
+</html>

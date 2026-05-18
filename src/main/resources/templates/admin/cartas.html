@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cartas - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topbar { background: #cc0000; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; }
+        .carta-img { width: 50px; height: 70px; object-fit: cover; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <span>🃏 Gestión de Cartas</span>
+    <div style="display:flex; gap:16px;">
+        <a th:href="@{/web/admin}">← Panel</a>
+        <a th:href="@{/web/logout}">Cerrar sesión</a>
+    </div>
+</div>
+<div class="container py-4">
+
+    <div class="card mb-4 p-3">
+        <h5>➕ Añadir carta nueva</h5>
+        <form th:action="@{/web/admin/cartas/crear}" method="post" class="row g-2 mt-1">
+            <div class="col-md-3"><input name="nombre" class="form-control" placeholder="Nombre" required></div>
+            <div class="col-md-2"><input name="tipo" class="form-control" placeholder="Tipo (ej: Fuego)"></div>
+            <div class="col-md-2"><input name="setCodigo" class="form-control" placeholder="Set código"></div>
+            <div class="col-md-2">
+                <select name="rareza" class="form-select" required>
+                    <option th:each="r : ${rarezas}" th:value="${r}" th:text="${r}"></option>
+                </select>
+            </div>
+            <div class="col-md-2"><input name="precioBase" class="form-control" placeholder="Precio €" type="number" step="0.01"></div>
+            <div class="col-md-3"><input name="imagenUrl" class="form-control" placeholder="URL imagen"></div>
+            <div class="col-md-2"><button class="btn btn-success w-100">Añadir</button></div>
+        </form>
+    </div>
+
+    <table class="table table-bordered bg-white">
+        <thead class="table-dark">
+            <tr><th>Img</th><th>Nombre</th><th>Tipo</th><th>Set</th><th>Rareza</th><th>Precio</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${cartas}">
+                <td><img th:src="${c.imagenUrl}" class="carta-img" th:if="${c.imagenUrl != null}"></td>
+                <td th:text="${c.nombre}"></td>
+                <td th:text="${c.tipo}"></td>
+                <td th:text="${c.setCodigo}"></td>
+                <td th:text="${c.rareza}"></td>
+                <td th:text="${c.precioBase != null} ? ${c.precioBase} + ' €' : '-'"></td>
+                <td style="display:flex; gap:4px;">
+                    <button class="btn btn-sm btn-warning" type="button"
+                            th:data-id="${c.id}"
+                            th:data-nombre="${c.nombre}"
+                            th:data-tipo="${c.tipo}"
+                            th:data-set="${c.setCodigo}"
+                            th:data-rareza="${c.rareza}"
+                            th:data-imagen="${c.imagenUrl}"
+                            th:data-precio="${c.precioBase}"
+                            onclick="abrirEditar(this)">
+                        ✏️ Editar
+                    </button>
+                    <form th:action="@{/web/admin/cartas/{id}/eliminar(id=${c.id})}" method="post" style="display:inline">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmarEliminar(this)">🗑</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal editar -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">✏️ Editar carta</h5></div>
+            <form id="formEditar" method="post">
+                <div class="modal-body row g-2">
+                    <div class="col-12"><input id="eNombre" name="nombre" class="form-control" placeholder="Nombre" required></div>
+                    <div class="col-6"><input id="eTipo" name="tipo" class="form-control" placeholder="Tipo"></div>
+                    <div class="col-6"><input id="eSet" name="setCodigo" class="form-control" placeholder="Set código"></div>
+                    <div class="col-6">
+                        <select id="eRareza" name="rareza" class="form-select">
+                            <option th:each="r : ${rarezas}" th:value="${r}" th:text="${r}"></option>
+                        </select>
+                    </div>
+                    <div class="col-6"><input id="ePrecio" name="precioBase" class="form-control" placeholder="Precio €" type="number" step="0.01"></div>
+                    <div class="col-12"><input id="eImagen" name="imagenUrl" class="form-control" placeholder="URL imagen"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function abrirEditar(btn) {
+    document.getElementById('formEditar').action = '/web/admin/cartas/' + btn.getAttribute('data-id') + '/editar';
+    document.getElementById('eNombre').value = btn.getAttribute('data-nombre') || '';
+    document.getElementById('eTipo').value   = btn.getAttribute('data-tipo')   || '';
+    document.getElementById('eSet').value    = btn.getAttribute('data-set')    || '';
+    document.getElementById('eRareza').value = btn.getAttribute('data-rareza') || '';
+    document.getElementById('eImagen').value = btn.getAttribute('data-imagen') || '';
+    document.getElementById('ePrecio').value = btn.getAttribute('data-precio') || '';
+    new bootstrap.Modal(document.getElementById('modalEditar')).show();
+}
+
+function confirmarEliminar(btn) {
+    if (confirm('¿Eliminar esta carta?')) {
+        btn.closest('form').submit();
+    }
+}
+</script>
+</body>
+</html>

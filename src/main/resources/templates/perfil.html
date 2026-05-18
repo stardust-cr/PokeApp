@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mi Perfil — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.4rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .back-btn {
+            color:white; text-decoration:none; font-weight:bold;
+            background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px;
+            font-size:0.9rem; transition:background 0.2s;
+        }
+        .back-btn:hover { background:rgba(255,255,255,0.35); }
+
+        /* ── CONTENEDOR ── */
+        .container { max-width: 700px; margin: 32px auto; padding: 0 20px; }
+
+        /* ── PERFIL HEADER ── */
+        .perfil-header {
+            background: white; border-radius: 28px;
+            border: 4px solid #FFB3D9; box-shadow: 0 8px 0 #FFD1E8;
+            padding: 32px; text-align: center; margin-bottom: 24px;
+            animation: fadeInUp 0.4s ease-out;
+        }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:none;} }
+        .avatar-wrapper {
+            position: relative; display: inline-block; margin-bottom: 16px;
+        }
+        .avatar-img {
+            width: 100px; height: 100px; border-radius: 50%;
+            border: 5px solid #FFB3D9; object-fit: cover;
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #FFD1E8;
+        }
+        .avatar-inicial {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: linear-gradient(135deg, #FFB3D9, #FF8A8A);
+            color: white; font-size: 2.5rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            border: 5px solid #FFB3D9;
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #FFD1E8;
+        }
+        .perfil-nombre { font-size: 1.5rem; font-weight: bold; color: #333; margin-bottom: 4px; }
+        .perfil-email  { color: #AAA; font-size: 0.88rem; margin-bottom: 14px; }
+        .perfil-badge {
+            display: inline-block; background: #FFF9C4; color: #78650A;
+            border: 2px solid #FDE68A; border-radius: 50px;
+            padding: 4px 14px; font-size: 0.78rem; font-weight: bold;
+        }
+
+        /* ── STATS ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px; margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white; border-radius: 20px; padding: 18px;
+            border: 3px solid #EEE; box-shadow: 0 4px 0 #F0F0F0; text-align: center;
+        }
+        .stat-num   { font-size: 1.6rem; font-weight: bold; color: #E63946; display: block; }
+        .stat-label { color: #AAA; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+        /* ── SECCIONES ── */
+        .section-card {
+            background: white; border-radius: 22px; padding: 22px 24px;
+            border: 3px solid #EEE; box-shadow: 0 4px 0 #F0F0F0;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 0.95rem; font-weight: bold; color: #555;
+            margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid #F5F5F5;
+        }
+
+        /* ── FORM EDITAR ── */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block; font-size: 0.82rem; color: #888;
+            font-weight: bold; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%; padding: 12px 14px; border: 2px solid #EEE;
+            border-radius: 12px; font-size: 0.95rem; color: #333;
+            outline: none; transition: 0.2s; background: #FAFAFA;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #FFB3D9; background: white;
+            box-shadow: 0 0 0 4px rgba(255,179,217,0.15);
+        }
+        .form-group input[readonly] { color: #AAA; cursor: not-allowed; background: #F5F5F5; }
+        .form-group input[type="file"] {
+            background: #FFF9C4; border: 2px dashed #FBC02D;
+            color: #78650A; cursor: pointer; padding: 10px;
+        }
+
+        /* ── ALERTA ── */
+        .alert {
+            border-radius: 12px; padding: 12px 16px; font-size: 0.88rem; margin-bottom: 16px;
+        }
+        .alert-danger { background:rgba(255,107,107,0.12); color:#C62828; border-left:4px solid #F87171; }
+        .alert-success{ background:rgba(78,205,196,0.12); color:#0E7490; border-left:4px solid #4ECDC4; }
+
+        /* ── BOTONES ── */
+        .btn-guardar {
+            width: 100%; padding: 14px; background: #FFB3D9; color: #A04070;
+            border: none; border-radius: 14px; font-size: 1rem; font-weight: bold;
+            cursor: pointer; box-shadow: 0 5px 0 #FF99CC; transition: all 0.2s;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .btn-guardar:hover { transform: translateY(2px); box-shadow: 0 3px 0 #FF99CC; }
+        .btn-guardar:active{ transform: translateY(4px); box-shadow: 0 1px 0 #FF99CC; }
+
+        /* ── ZONA PELIGRO ── */
+        .zona-peligro {
+            border-color: #FFB3B3; box-shadow: 0 4px 0 #FFD1D1;
+        }
+        .zona-peligro .section-title { color: #E63946; border-bottom-color: #FEE; }
+        .zona-peligro p { color: #888; font-size: 0.88rem; margin-bottom: 16px; line-height: 1.6; }
+        .btn-danger {
+            background: white; color: #E63946; border: 2px solid #FFB3B3;
+            border-radius: 12px; padding: 11px 20px; font-weight: bold;
+            cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+        }
+        .btn-danger:hover { background: #FEE2E2; border-color: #F87171; }
+
+        /* ── LINKS RÁPIDOS ── */
+        .quick-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .quick-link {
+            display: flex; align-items: center; gap: 8px;
+            background: #FAFAFA; border: 2px solid #EEE;
+            border-radius: 12px; padding: 10px 14px;
+            text-decoration: none; color: #555; font-size: 0.88rem;
+            font-weight: bold; transition: 0.2s;
+        }
+        .quick-link:hover { background: #FFF5F5; border-color: #FFB3B3; color: #E63946; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Mi Perfil
+    </a>
+    <a th:href="@{/web/home}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="container">
+
+    <!-- Cabecera de perfil -->
+    <div class="perfil-header">
+        <div class="avatar-wrapper">
+            <img th:if="${tieneAvatar}"
+                 th:src="@{/web/perfil/avatar}" class="avatar-img" th:alt="${username}"/>
+            <div th:unless="${tieneAvatar}" class="avatar-inicial" th:text="${username != null ? username.substring(0, 1).toUpperCase() : 'A'}">A</div>
+        </div>
+        <div class="perfil-nombre" th:text="${username}">Entrenador</div>
+        <div class="perfil-email"  th:text="${email}">correo@poke.com</div>
+        <span class="perfil-badge">🎮 Entrenador Pokémon</span>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <span class="stat-num">0</span>
+            <div class="stat-label">Colecciones</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-num">0</span>
+            <div class="stat-label">Ventas</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-num">0</span>
+            <div class="stat-label">Compras</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-num">0</span>
+            <div class="stat-label">Runs Nuzlocke</div>
+        </div>
+    </div>
+
+    <!-- Editar perfil -->
+    <div class="section-card">
+        <div class="section-title">✏️ Editar perfil</div>
+
+        <div th:if="${okMsg}"  class="alert alert-success" th:text="${okMsg}"></div>
+        <div th:if="${errMsg}" class="alert alert-danger"  th:text="${errMsg}"></div>
+
+        <!-- Cambiar nombre de usuario -->
+        <form th:action="@{/web/perfil/username}" method="post" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label>Nombre de usuario</label>
+                <input type="text" name="nuevoUsername" th:value="${username}" required/>
+            </div>
+            <button type="submit" class="btn-guardar">Actualizar nombre</button>
+        </form>
+
+        <!-- Cambiar avatar -->
+        <form th:action="@{/web/perfil/avatar}" method="post" enctype="multipart/form-data" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label>Foto de perfil</label>
+                <input type="file" name="imagen" accept="image/*"/>
+            </div>
+            <button type="submit" class="btn-guardar">Actualizar foto</button>
+        </form>
+
+        <!-- Cambiar contraseña -->
+        <form th:action="@{/web/perfil/password}" method="post">
+            <div class="form-group">
+                <label>Contraseña actual</label>
+                <input type="password" name="passwordActual" required/>
+            </div>
+            <div class="form-group">
+                <label>Nueva contraseña</label>
+                <input type="password" name="passwordNueva" required/>
+            </div>
+            <div class="form-group">
+                <label>Confirmar nueva contraseña</label>
+                <input type="password" name="passwordConfirm" required/>
+            </div>
+            <button type="submit" class="btn-guardar">Cambiar contraseña</button>
+        </form>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="section-card">
+        <div class="section-title">🚀 Accesos rápidos</div>
+        <div class="quick-links">
+            <a th:href="@{/web/mercado/mis-ventas}"  class="quick-link">📦 Mis Ventas</a>
+            <a th:href="@{/web/mercado/mis-compras}" class="quick-link">🛒 Mis Compras</a>
+            <a th:href="@{/web/valoraciones}"         class="quick-link">⭐ Valoraciones</a>
+            <a th:href="@{/web/wishlist}"             class="quick-link">🌟 Wishlist</a>
+            <a th:href="@{/web/coleccion}"            class="quick-link">🃏 Colección</a>
+        </div>
+    </div>
+
+    <!-- Zona de peligro -->
+    <div class="section-card zona-peligro">
+        <div class="section-title">⚠️ Zona de peligro</div>
+        <p>Cerrar sesión en todos los dispositivos o eliminar tu cuenta de forma permanente. Esta acción no se puede deshacer.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a th:href="@{/web/logout}" class="btn-danger">Cerrar sesión</a>
+            <button class="btn-danger" onclick="if(confirm('¿Eliminar cuenta? Esta acción es permanente.')) window.location='/web/perfil/eliminar'">
+                Eliminar cuenta
+            </button>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

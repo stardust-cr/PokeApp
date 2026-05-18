@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Detalle Run — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.3rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: #E63946; }
+        .pokeball::after  { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: white; }
+        .pokeball-linea { position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 100%; height: 3px; background: #1a1a1a; z-index: 1; }
+        .pokeball .btn-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; background: white; border-radius: 50%; border: 3px solid #1a1a1a; z-index: 2; }
+        .back-btn {
+            color: white; text-decoration: none; font-weight: bold;
+            background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 12px;
+            font-size: 0.9rem; transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.35); }
+
+        /* ── CONTENEDOR ── */
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
+
+        /* ── RUN HEADER ── */
+        .run-header {
+            background: white; padding: 24px 28px;
+            border-radius: 25px; box-shadow: 0 8px 0 #D1EEFF;
+            margin-bottom: 28px; border: 4px solid #B3E5FF;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        .run-header h2 { font-size: 1.5rem; color: #0369A1; }
+        .run-header p  { color: #888; font-size: 0.9rem; margin-top: 4px; }
+        .status-badge {
+            padding: 6px 18px; border-radius: 50px;
+            font-weight: bold; text-transform: uppercase; font-size: 0.8rem; border: 2px solid;
+        }
+        .status-ACTIVA     { background: #E8F5E9; color: #2E7D32; border-color: #B3E5BE; }
+        .status-COMPLETADA { background: #E3F2FD; color: #1565C0; border-color: #B3D4F5; }
+        .status-FALLIDA    { background: #FEE2E2; color: #991B1B; border-color: #FCA5A5; }
+
+        .run-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-completar {
+            background: #6EE7B7; color: #065F46; border: none; border-radius: 12px;
+            padding: 10px 16px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #34D399; transition: all 0.2s;
+        }
+        .btn-completar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #34D399; }
+        .btn-fallida {
+            background: #FCA5A5; color: #7F1D1D; border: none; border-radius: 12px;
+            padding: 10px 16px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #F87171; transition: all 0.2s;
+        }
+        .btn-fallida:hover { transform: translateY(2px); box-shadow: 0 2px 0 #F87171; }
+
+        /* ── SECCIÓN CARD ── */
+        .section-card {
+            background: white; border-radius: 25px;
+            box-shadow: 0 6px 0 #F0F0F0; padding: 24px; margin-bottom: 24px; border: 3px solid #EEE;
+        }
+        .card-captura { border-color: #FFD1E8; box-shadow: 0 6px 0 #FFE4F0; }
+        .card-team    { border-color: #B3E5BE; box-shadow: 0 6px 0 #D4EDDA; }
+        .card-gyms    { border-color: #FFF9C4; box-shadow: 0 6px 0 #FFF2B2; }
+        .card-grave   { border-color: #D1D1FF; box-shadow: 0 6px 0 #E6E6FF; }
+
+        .section-title {
+            font-size: 1.05rem; font-weight: bold; color: #555;
+            margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+        }
+        .section-count {
+            background: #F0F0F0; color: #888;
+            font-size: 0.78rem; padding: 2px 8px; border-radius: 50px;
+        }
+
+        /* ── CAPTURA FORM ── */
+        .capture-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .capture-form input[type="text"],
+        .capture-form input[type="number"] {
+            padding: 10px 12px; border-radius: 12px; border: 2px solid #EEE;
+            outline: none; flex: 1; min-width: 120px; font-size: 0.9rem; color: #333;
+            transition: border-color 0.2s;
+        }
+        .capture-form input:focus { border-color: #FFD1E8; }
+        .btn-capturar {
+            background: #FFB3D9; color: #A04070; border: none; border-radius: 12px;
+            padding: 10px 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #FF99CC; transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-capturar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #FF99CC; }
+        .btn-capturar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 0 4px 0 #FF99CC; }
+
+        /* ── POKEMON SEARCHER ── */
+        .poke-search-wrap { position: relative; flex: 1.5; min-width: 200px; }
+        .poke-search-input {
+            width: 100%; padding: 10px 12px 10px 42px; border-radius: 12px; border: 2px solid #EEE;
+            outline: none; font-size: 0.9rem; color: #333; transition: border-color 0.2s;
+            background: white;
+        }
+        .poke-search-input:focus { border-color: #FFD1E8; }
+        .poke-search-icon {
+            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+            font-size: 1rem; pointer-events: none;
+        }
+        .poke-selected-preview {
+            display: none; align-items: center; gap: 8px;
+            padding: 6px 10px; background: #FFF0F8; border: 2px solid #FFD1E8;
+            border-radius: 12px; margin-top: 6px; font-size: 0.85rem; color: #A04070; font-weight: bold;
+        }
+        .poke-selected-preview img { width: 36px; height: 36px; image-rendering: pixelated; }
+        .poke-selected-preview.visible { display: flex; }
+        .poke-clear-btn {
+            background: none; border: none; cursor: pointer; color: #CCC; font-size: 1.1rem;
+            margin-left: auto; padding: 0 4px;
+        }
+        .poke-clear-btn:hover { color: #E63946; }
+        .poke-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 100;
+            background: white; border: 2px solid #FFD1E8; border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12); max-height: 280px; overflow-y: auto;
+            display: none;
+        }
+        .poke-dropdown.open { display: block; }
+        .poke-option {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            cursor: pointer; transition: background 0.15s; border-radius: 12px; margin: 4px;
+        }
+        .poke-option:hover { background: #FFF0F8; }
+        .poke-option img { width: 44px; height: 44px; image-rendering: pixelated; }
+        .poke-option-info { flex: 1; }
+        .poke-option-name { font-weight: bold; font-size: 0.9rem; color: #333; text-transform: capitalize; }
+        .poke-option-num  { font-size: 0.78rem; color: #AAA; }
+        .poke-option-types { display: flex; gap: 4px; margin-top: 2px; }
+        .poke-type-badge {
+            font-size: 0.68rem; padding: 1px 6px; border-radius: 50px; font-weight: bold;
+            text-transform: capitalize; color: white;
+        }
+        .poke-loading { text-align: center; padding: 16px; color: #CCC; font-size: 0.85rem; }
+        .poke-no-result { text-align: center; padding: 16px; color: #CCC; font-size: 0.85rem; }
+        .poke-not-in-db {
+            font-size: 0.72rem; color: #F59E0B; font-weight: bold; margin-top: 1px;
+        }
+
+        /* ── POKEMON LIST ── */
+        .pokemon-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 14px;
+        }
+        .pk-item {
+            display: flex; align-items: center; gap: 14px;
+            background: #FAFAFA; border: 2px solid #EEE; border-radius: 18px; padding: 14px;
+        }
+        .pk-item img {
+            width: 64px; height: 64px;
+            image-rendering: pixelated; flex-shrink: 0;
+            background: #F0F0F0; border-radius: 12px; padding: 4px;
+        }
+        .pk-img-placeholder {
+            width: 64px; height: 64px; border-radius: 12px;
+            background: #F0F0F0; display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; flex-shrink: 0;
+        }
+        .pk-info { flex: 1; }
+        .pk-nombre { font-weight: bold; font-size: 1rem; color: #333; }
+        .pk-especie { color: #888; font-size: 0.82rem; margin-top: 2px; }
+        .pk-nivel   { color: #AAA; font-size: 0.78rem; margin-top: 2px; }
+        .pk-acciones { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .btn-sm {
+            border: none; border-radius: 8px; padding: 5px 10px;
+            font-size: 0.78rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-caja   { background: #E3F2FD; color: #1565C0; }
+        .btn-team   { background: #E8F5E9; color: #2E7D32; }
+        .btn-muerte { background: #FEE2E2; color: #991B1B; }
+        .btn-sm:hover { filter: brightness(0.92); }
+        .causa-muerte { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .causa-muerte input[type="number"],
+        .causa-muerte input[type="text"] {
+            padding: 5px 8px; border-radius: 8px; border: 2px solid #EEE;
+            font-size: 0.78rem; flex: 1; min-width: 80px; outline: none;
+        }
+
+        /* ── EMPTY STATE ── */
+        .lista-vacia { text-align: center; color: #CCC; padding: 20px; font-size: 0.9rem; }
+
+        /* ── GIMNASIOS ── */
+        .gym-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 14px;
+        }
+        .gym-item {
+            text-align: center; padding: 16px; background: #FFF;
+            border: 3px solid #EEE; border-radius: 18px; position: relative;
+            transition: all 0.2s;
+        }
+        .gym-item.done { border-color: #B3E5BE; background: #F1FBF2; }
+        .gym-nombre { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 3px; }
+        .gym-lider  { color: #888; font-size: 0.82rem; }
+        .gym-tipo   { font-size: 0.78rem; color: #AAA; margin-bottom: 10px; }
+        .check-mark { font-size: 1.4rem; }
+        .btn-gym {
+            background: #FFF9C4; color: #78650A; border: 2px solid #FDE68A;
+            border-radius: 10px; padding: 6px 12px; font-size: 0.82rem;
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-gym:hover { background: #FDE68A; }
+        .btn-gym-undo {
+            background: #F0F0F0; color: #666; border: 2px solid #DDD;
+            border-radius: 10px; padding: 6px 12px; font-size: 0.82rem;
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-gym-undo:hover { background: #E0E0E0; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/nuzlocke}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Detalle de Run
+    </a>
+    <a th:href="@{/web/nuzlocke}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="container">
+
+    <!-- Cabecera de la run -->
+    <div class="run-header">
+        <div>
+            <h2 th:text="${run.juego.nombre}">Juego</h2>
+            <p>Región: <span th:text="${run.juego.region}">Kanto</span></p>
+        </div>
+        <span class="status-badge" th:classappend="${'status-' + run.estado.name()}" th:text="${run.estado}">ACTIVA</span>
+
+        <div class="run-acciones" th:if="${run.estado.name() == 'ACTIVA'}">
+            <form th:action="@{/web/nuzlocke/{id}/finalizar(id=${run.id})}" method="post" style="display:inline">
+                <button name="estado" value="COMPLETADA" class="btn-completar">✔ Completar</button>
+                <button name="estado" value="FALLIDA" class="btn-fallida">✘ Fallida</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Capturar Pokémon -->
+    <div class="section-card card-captura" th:if="${run.estado.name() == 'ACTIVA'}">
+        <div class="section-title">🎯 Capturar Pokémon</div>
+        <!-- Datos de la BD en JSON para resolución local de IDs -->
+        <script th:inline="javascript">
+            const POKEDEX_DB = [];
+        </script>
+
+        <form id="capturaForm" th:action="@{/web/nuzlocke/{id}/pokemon/capturar(id=${run.id})}" method="post" class="capture-form">
+            <!-- Campo oculto que recibe el ID de la BD -->
+            <input type="hidden" name="especieId" id="especieIdInput">
+
+            <!-- Buscador PokéAPI -->
+            <div class="poke-search-wrap">
+                <span class="poke-search-icon">🔍</span>
+                <input type="text" id="pokeSearchInput" class="poke-search-input"
+                       placeholder="Buscar Pokémon..." autocomplete="off">
+                <div id="pokeDropdown" class="poke-dropdown"></div>
+                <div id="pokeSelectedPreview" class="poke-selected-preview">
+                    <img id="pokeSelectedImg" src="" alt="">
+                    <span id="pokeSelectedName"></span>
+                    <button type="button" class="poke-clear-btn" id="pokeClearBtn" title="Quitar selección">✕</button>
+                </div>
+            </div>
+
+            <input type="text" name="apodo" placeholder="Apodo" required>
+            <input type="number" name="nivel" placeholder="Nivel" min="1" max="100">
+            <input type="text" name="ruta" placeholder="Ruta">
+            <button type="submit" class="btn-capturar" id="btnCapturar" disabled>+ Capturar</button>
+        </form>
+
+        <script>
+        (function() {
+            // Colores por tipo
+            const TYPE_COLORS = {
+                normal:'#A8A878', fire:'#F08030', water:'#6890F0', electric:'#F8D030',
+                grass:'#78C850', ice:'#98D8D8', fighting:'#C03028', poison:'#A040A0',
+                ground:'#E0C068', flying:'#A890F0', psychic:'#F85888', bug:'#A8B820',
+                rock:'#B8A038', ghost:'#705898', dragon:'#7038F8', dark:'#705848',
+                steel:'#B8B8D0', fairy:'#EE99AC'
+            };
+
+            const searchInput   = document.getElementById('pokeSearchInput');
+            const dropdown      = document.getElementById('pokeDropdown');
+            const especieInput  = document.getElementById('especieIdInput');
+            const preview       = document.getElementById('pokeSelectedPreview');
+            const previewImg    = document.getElementById('pokeSelectedImg');
+            const previewName   = document.getElementById('pokeSelectedName');
+            const clearBtn      = document.getElementById('pokeClearBtn');
+            const btnCapturar   = document.getElementById('btnCapturar');
+
+            let searchTimer = null;
+            let lastResults = [];
+
+            // Buscar en PokéAPI por nombre parcial
+            async function searchPokemon(query) {
+                if (!query || query.length < 2) { closeDropdown(); return; }
+                showLoading();
+                try {
+                    // Buscar por nombre exacto primero
+                    const exact = await fetchPokemon(query.toLowerCase().trim());
+                    if (exact) {
+                        renderResults([exact]);
+                        return;
+                    }
+                    // Si no hay coincidencia exacta, buscar en lista
+                    const listResp = await fetch('https://pokeapi.co/api/v2/pokemon?limit=2000');
+                    if (!listResp.ok) throw new Error();
+                    const listData = await listResp.json();
+                    const q = query.toLowerCase();
+                    const matches = listData.results
+                        .filter(p => p.name.includes(q))
+                        .slice(0, 10);
+                    if (matches.length === 0) { showNoResult(); return; }
+                    const details = await Promise.all(matches.map(m => fetchPokemon(m.name)));
+                    renderResults(details.filter(Boolean));
+                } catch(e) {
+                    showNoResult();
+                }
+            }
+
+            async function fetchPokemon(nameOrId) {
+    try {
+        const r = await fetch('https://pokeapi.co/api/v2/pokemon/' + nameOrId);
+        if (!r.ok) return null;
+        const d = await r.json();
+
+        // Buscar en nuestra BD por nombre
+        const dbResp = await fetch('/web/nuzlocke/api/pokedex/buscar?nombre=' + encodeURIComponent(d.name));
+        const dbList = await dbResp.json();
+        const dbEntry = dbList.find(p => p.numero === d.id);
+
+        return {
+            apiId:  d.id,
+            dbId:   dbEntry ? dbEntry.id : null,
+            name:   d.name,
+            sprite: d.sprites.front_default ||
+                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${d.id}.png`,
+            types:  d.types.map(t => t.type.name)
+        };
+    } catch { return null; }
+}
+
+            function showLoading() {
+                dropdown.innerHTML = '<div class="poke-loading">🔄 Buscando…</div>';
+                dropdown.classList.add('open');
+            }
+            function showNoResult() {
+                dropdown.innerHTML = '<div class="poke-no-result">😕 No se encontró ningún Pokémon</div>';
+                dropdown.classList.add('open');
+            }
+            function closeDropdown() {
+                dropdown.classList.remove('open');
+                dropdown.innerHTML = '';
+            }
+
+            function renderResults(results) {
+                if (!results.length) { showNoResult(); return; }
+                lastResults = results;
+                dropdown.innerHTML = '';
+                results.forEach(pk => {
+                    const div = document.createElement('div');
+                    div.className = 'poke-option';
+                    const typeBadges = pk.types.map(t =>
+                        `<span class="poke-type-badge" style="background:${TYPE_COLORS[t]||'#999'}">${t}</span>`
+                    ).join('');
+                    const notInDb = pk.dbId === null
+                        ? '<div class="poke-not-in-db">⚠ No está en tu BD</div>' : '';
+                    div.innerHTML = `
+                        <img src="${pk.sprite}" alt="${pk.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pk.apiId}.png'">
+                        <div class="poke-option-info">
+                            <div class="poke-option-name">${pk.name}</div>
+                            <div class="poke-option-num">#${String(pk.apiId).padStart(3,'0')}</div>
+                            <div class="poke-option-types">${typeBadges}</div>
+                            ${notInDb}
+                        </div>`;
+                    div.addEventListener('click', () => selectPokemon(pk));
+                    if (pk.dbId === null) div.style.opacity = '0.6';
+                    dropdown.appendChild(div);
+                });
+                dropdown.classList.add('open');
+            }
+
+            function selectPokemon(pk) {
+                if (pk.dbId === null) {
+                    alert('Este Pokémon no está en la base de datos del juego. Solo puedes capturar Pokémon de la región del juego actual.');
+                    return;
+                }
+                especieInput.value = pk.dbId;
+                searchInput.value  = '';
+                previewImg.src     = pk.sprite;
+                previewName.textContent = '#' + String(pk.apiId).padStart(3,'0') + ' ' + pk.name;
+                preview.classList.add('visible');
+                btnCapturar.disabled = false;
+                closeDropdown();
+            }
+
+            clearBtn.addEventListener('click', () => {
+                especieInput.value = '';
+                preview.classList.remove('visible');
+                btnCapturar.disabled = true;
+                searchInput.value = '';
+                searchInput.focus();
+            });
+
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimer);
+                if (!searchInput.value.trim()) { closeDropdown(); return; }
+                searchTimer = setTimeout(() => searchPokemon(searchInput.value.trim()), 350);
+            });
+
+            searchInput.addEventListener('focus', () => {
+                if (searchInput.value.trim().length >= 2) searchPokemon(searchInput.value.trim());
+            });
+
+            // Cerrar al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.poke-search-wrap')) closeDropdown();
+            });
+        })();
+        </script>
+    </div>
+
+    <!-- Equipo activo -->
+    <div class="section-card card-team">
+        <div class="section-title">
+            ⚔️ Equipo activo
+            <span class="section-count" th:text="${pokemonVivos.size()}">0</span>
+        </div>
+        <div class="pokemon-list" th:if="${!pokemonVivos.isEmpty()}">
+            <div class="pk-item" th:each="p : ${pokemonVivos}">
+                <img th:if="${p.especie != null and p.especie.imagenUrl != null}"
+                     th:src="${p.especie.imagenUrl}" th:alt="${p.apodo}"/>
+                <div class="pk-img-placeholder" th:if="${p.especie == null or p.especie.imagenUrl == null}">🟢</div>
+                <div class="pk-info">
+                    <div class="pk-nombre" th:text="${p.apodo}">Apodo</div>
+                    <div class="pk-especie" th:text="${p.especie != null ? p.especie.nombre : '?'}">Especie</div>
+                    <div class="pk-nivel">Nv. <span th:text="${p.nivel_captura}">1</span></div>
+                    <div class="pk-acciones" th:if="${run.estado.name() == 'ACTIVA'}">
+                        <form th:action="@{/web/nuzlocke/{r}/pokemon/{pk}/estado(r=${run.id},pk=${p.id})}" method="post" style="display:inline">
+                            <input type="hidden" name="estado" value="CAJA">
+                            <button type="submit" class="btn-sm btn-caja">📦 Caja</button>
+                        </form>
+                        <form th:action="@{/web/nuzlocke/{r}/pokemon/{pk}/matar(r=${run.id},pk=${p.id})}" method="post" style="display:inline">
+                            <div class="causa-muerte">
+                                <input type="number" name="nivelMuerte" placeholder="Nv. muerte">
+                                <input type="text"   name="causaMuerte" placeholder="Causa">
+                                <button type="submit" class="btn-sm btn-muerte">💀 Muerto</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lista-vacia" th:if="${pokemonVivos.isEmpty()}">No hay Pokémon en el equipo</div>
+    </div>
+
+    <!-- Caja -->
+    <div class="section-card">
+        <div class="section-title">
+            📦 En la caja
+            <span class="section-count" th:text="${pokemonCaja.size()}">0</span>
+        </div>
+        <div class="pokemon-list" th:if="${!pokemonCaja.isEmpty()}">
+            <div class="pk-item" th:each="p : ${pokemonCaja}">
+                <img th:if="${p.especie != null and p.especie.imagenUrl != null}"
+                     th:src="${p.especie.imagenUrl}" th:alt="${p.apodo}"/>
+                <div class="pk-img-placeholder" th:if="${p.especie == null or p.especie.imagenUrl == null}">📦</div>
+                <div class="pk-info">
+                    <div class="pk-nombre" th:text="${p.apodo}">Apodo</div>
+                    <div class="pk-especie" th:text="${p.especie != null ? p.especie.nombre : '?'}">Especie</div>
+                    <div class="pk-acciones" th:if="${run.estado.name() == 'ACTIVA'}">
+                        <form th:action="@{/web/nuzlocke/{r}/pokemon/{pk}/estado(r=${run.id},pk=${p.id})}" method="post" style="display:inline">
+                            <input type="hidden" name="estado" value="VIVO">
+                            <button type="submit" class="btn-sm btn-team">⚔️ Al equipo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lista-vacia" th:if="${pokemonCaja.isEmpty()}">La caja está vacía</div>
+    </div>
+
+    <!-- Cementerio -->
+    <div class="section-card card-grave">
+        <div class="section-title">
+            💀 Cementerio
+            <span class="section-count" th:text="${pokemonMuertos.size()}">0</span>
+        </div>
+        <div class="pokemon-list" th:if="${!pokemonMuertos.isEmpty()}">
+            <div class="pk-item" style="opacity:0.7" th:each="p : ${pokemonMuertos}">
+                <img th:if="${p.especie != null and p.especie.imagenUrl != null}"
+                     th:src="${p.especie.imagenUrl}" th:alt="${p.apodo}"
+                     style="filter:grayscale(1)"/>
+                <div class="pk-img-placeholder" th:if="${p.especie == null or p.especie.imagenUrl == null}" style="filter:grayscale(1)">💀</div>
+                <div class="pk-info">
+                    <div class="pk-nombre" th:text="${p.apodo}">Apodo</div>
+                    <div class="pk-especie" th:text="${p.especie != null ? p.especie.nombre : '?'}">Especie</div>
+                    <div class="pk-nivel">Nv. muerte: <span th:text="${p.nivel_muerte}">—</span></div>
+                    <div class="pk-nivel" th:text="${p.causa_muerte}">Causa</div>
+                </div>
+            </div>
+        </div>
+        <div class="lista-vacia" th:if="${pokemonMuertos.isEmpty()}">¡Nadie ha caído todavía!</div>
+    </div>
+
+    <!-- Gimnasios -->
+    <div class="section-card card-gyms">
+        <div class="section-title">🏅 Gimnasios</div>
+        <div class="gym-grid">
+            <div class="gym-item" th:each="g : ${gimnasios}" th:classappend="${completados.contains(g.id) ? 'done' : ''}">
+                <div class="gym-nombre" th:text="${g.nombre}">Gimnasio</div>
+                <div class="gym-lider" th:text="${g.nombreLider}">Líder</div>
+                <div class="gym-tipo" th:text="${g.tipoPrincipal}">Tipo</div>
+
+                <span class="check-mark" th:if="${completados.contains(g.id)}">✅</span>
+
+                <form th:if="${run.estado.name() == 'ACTIVA' and !completados.contains(g.id)}"
+                      th:action="@{/web/nuzlocke/{r}/gimnasio/{g}/completar(r=${run.id},g=${g.id})}" method="post">
+                    <button type="submit" class="btn-gym">Completar</button>
+                </form>
+                <form th:if="${run.estado.name() == 'ACTIVA' and completados.contains(g.id)}"
+                      th:action="@{/web/nuzlocke/{r}/gimnasio/{g}/descompletar(r=${run.id},g=${g.id})}" method="post">
+                    <button type="submit" class="btn-gym-undo">Deshacer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

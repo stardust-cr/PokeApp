@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topbar { background: #cc0000; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <span>🏷️ Gestión de Ventas</span>
+    <div style="display:flex; gap:16px;">
+        <a th:href="@{/web/admin}">← Panel</a>
+        <a th:href="@{/web/logout}">Cerrar sesión</a>
+    </div>
+</div>
+<div class="container py-4">
+    <table class="table table-bordered bg-white">
+        <thead class="table-dark">
+            <tr><th>ID</th><th>Vendedor</th><th>Comprador</th><th>Carta</th><th>Precio</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th>Acción</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="v : ${ventas}">
+                <td th:text="${v.id}"></td>
+                <td th:text="${v.vendedor.username}"></td>
+                <td th:text="${v.comprador != null} ? ${v.comprador.username} : '-'"></td>
+                <td th:text="${v.carta.nombre}"></td>
+                <td th:text="${v.precio != null} ? ${v.precio} + ' €' : 'Trueque'"></td>
+                <td th:text="${v.tipo}"></td>
+                <td>
+                    <span th:class="${v.estado.name() == 'COMPLETADA'} ? 'badge bg-success' :
+                                    (${v.estado.name() == 'CANCELADA'} ? 'badge bg-danger' : 'badge bg-warning text-dark')"
+                          th:text="${v.estado}"></span>
+                </td>
+                <td th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy')}"></td>
+                <td>
+                    <form th:action="'/web/admin/ventas/' + ${v.id} + '/eliminar'" method="post"
+                          onsubmit="return confirm('¿Eliminar esta venta?')">
+                        <button class="btn btn-sm btn-danger">🗑</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

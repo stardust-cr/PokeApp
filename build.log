@@ -1,0 +1,23 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< com.pokeapp:pokeapp >-------------------------
+[INFO] Building pokeapp 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ pokeapp ---
+[INFO] Deleting C:\Users\corre\OneDrive\Escritorio\PokeApp_SpringBoot\pokeapp\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ pokeapp ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 15 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ pokeapp ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 52 source files with javac [debug release 17] to target\classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.093 s
+[INFO] Finished at: 2026-04-26T20:49:54+02:00
+[INFO] ------------------------------------------------------------------------

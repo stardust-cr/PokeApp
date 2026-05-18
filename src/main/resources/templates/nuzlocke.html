@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mis Nuzlockes — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #E63946;
+            padding: 14px 24px;
+            box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a;
+            text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 3px solid #1a1a1a;
+            position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: #E63946; }
+        .pokeball::after  { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: white; }
+        .pokeball-linea { position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 100%; height: 3px; background: #1a1a1a; z-index: 1; }
+        .pokeball .btn-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; background: white; border-radius: 50%; border: 3px solid #1a1a1a; z-index: 2; }
+        .back-btn {
+            color: white; text-decoration: none; font-weight: bold;
+            background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 12px;
+            transition: background 0.2s; font-size: 0.9rem;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.35); }
+
+        /* ── CONTENEDOR ── */
+        .contenedor { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        /* ── BTN NUEVA RUN ── */
+        .btn-nueva-run {
+            background-color: #BAE6FD;
+            color: #075985;
+            border: none;
+            border-radius: 20px;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #7DD3FC;
+            display: block;
+            margin: 0 auto 36px auto;
+            transition: all 0.2s;
+        }
+        .btn-nueva-run:hover { transform: translateY(3px); box-shadow: 0 2px 0 #7DD3FC; }
+
+        /* ── GRID ── */
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 22px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: white;
+            border-radius: 22px;
+            border: 3px solid #FEF08A;
+            box-shadow: 8px 8px 0 #FBCFE8;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease;
+            overflow: hidden;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card-body { padding: 22px; flex-grow: 1; }
+        .card-title { font-size: 1.15rem; font-weight: bold; color: #E63946; margin-bottom: 6px; }
+        .card-sub { color: #888; font-size: 0.85rem; margin-bottom: 10px; }
+
+        /* ── BADGE ── */
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .badge-ACTIVA    { background: #BAE6FD; color: #0369A1; }
+        .badge-COMPLETADA{ background: #A7F3D0; color: #065F46; }
+        .badge-FALLIDA   { background: #FEE2E2; color: #991B1B; }
+
+        .card-fecha { font-size: 0.82rem; color: #AAA; }
+
+        /* ── FOOTER ── */
+        .card-footer {
+            background: #FAFAFA;
+            padding: 14px 18px;
+            border-top: 2px solid #F0F0F0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn-ver {
+            background: #FF8A8A;
+            color: white;
+            border-radius: 12px;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #E57373;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+        .btn-ver:hover { transform: translateY(2px); box-shadow: 0 2px 0 #E57373; }
+        .btn-ok {
+            background: #6EE7B7; color: #065F46;
+            border: none; border-radius: 10px; padding: 8px 12px;
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 3px 0 #34D399; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-ok:hover { transform: translateY(2px); box-shadow: 0 1px 0 #34D399; }
+        .btn-fail {
+            background: #FCA5A5; color: #7F1D1D;
+            border: none; border-radius: 10px; padding: 8px 12px;
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 3px 0 #F87171; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-fail:hover { transform: translateY(2px); box-shadow: 0 1px 0 #F87171; }
+        .btn-trash {
+            background: white; color: #F87171;
+            border: 2px solid #FCA5A5; border-radius: 10px;
+            padding: 8px 12px; font-weight: bold; cursor: pointer; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-trash:hover { background: #FEE2E2; }
+
+        /* ── VACÍO ── */
+        .vacio {
+            text-align: center;
+            color: #BBB;
+            padding: 40px 20px;
+        }
+        .vacio p { font-size: 1rem; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(3px);
+        }
+        .modal-overlay.abierto { display: flex; }
+        .modal-box {
+            background: white;
+            padding: 32px;
+            border-radius: 28px;
+            width: 90%; max-width: 420px;
+            border: 4px solid #FDE68A;
+            box-shadow: 0 10px 0 #FDE68A;
+        }
+        .modal-box h5 { font-size: 1.2rem; margin-bottom: 18px; color: #333; }
+        .modal-box label { display: block; font-size: 0.88rem; color: #888; font-weight: bold; margin-bottom: 8px; }
+        .modal-box select {
+            width: 100%; padding: 12px; border-radius: 12px;
+            border: 2px solid #EEE; font-size: 0.95rem; color: #333;
+            outline: none; margin-bottom: 16px;
+        }
+        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-cancelar {
+            background: #F0F0F0; color: #666;
+            border: none; border-radius: 12px; padding: 10px 18px;
+            font-weight: bold; cursor: pointer;
+        }
+        .btn-crear-run {
+            background: #FF8A8A; color: white;
+            border: none; border-radius: 12px; padding: 10px 20px;
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #E57373;
+            transition: all 0.2s;
+        }
+        .btn-crear-run:hover { transform: translateY(2px); box-shadow: 0 2px 0 #E57373; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        Mis Nuzlockes
+    </a>
+    <a th:href="@{/web/home}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="contenedor">
+    <button class="btn-nueva-run" onclick="document.getElementById('modalNuevaRun').classList.add('abierto')">+ Nueva Run</button>
+
+    <div class="row" th:if="${!runs.isEmpty()}">
+        <div th:each="run : ${runs}">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title" th:text="${run.juego.nombre}">Pokémon Rojo</div>
+                    <div class="card-sub">Región: <span th:text="${run.juego.region}">Kanto</span></div>
+                    <span class="badge"
+                          th:classappend="${'badge-' + run.estado.name()}"
+                          th:text="${run.estado}">ACTIVA</span>
+                    <div class="card-fecha">Inicio: <span th:text="${#temporals.format(run.fechaInicio,'dd/MM/yyyy')}"></span></div>
+                </div>
+                <div class="card-footer">
+                    <a th:href="@{/web/nuzlocke/{id}(id=${run.id})}" class="btn-ver">Ver detalle</a>
+
+                    <form th:action="@{/web/nuzlocke/{id}/finalizar(id=${run.id})}" method="post"
+                          th:if="${run.estado == T(com.pokeapp.pokeapp.model.EstadoRun).ACTIVA}"
+                          style="display:flex;gap:6px">
+                        <button name="estado" value="COMPLETADA" class="btn-ok" title="Completada">✔</button>
+                        <button name="estado" value="FALLIDA"    class="btn-fail" title="Fallida">✘</button>
+                    </form>
+
+                    <form th:action="@{/web/nuzlocke/{id}/eliminar(id=${run.id})}" method="post"
+                          onsubmit="return confirm('¿Eliminar esta run?')">
+                        <button class="btn-trash" title="Eliminar">🗑</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="vacio" th:if="${runs.isEmpty()}">
+        <p>Aún no tienes ninguna run. ¡Crea una con el botón de arriba!</p>
+    </div>
+</div>
+
+<!-- Modal nueva run -->
+<div class="modal-overlay" id="modalNuevaRun">
+    <div class="modal-box">
+        <h5>Nueva Run Nuzlocke</h5>
+        <form action="/web/nuzlocke/crear" method="post">
+            <label>Selecciona el juego:</label>
+            <select name="juegoId" required>
+                <option value="" disabled selected>-- Elige un juego --</option>
+                <option th:each="j : ${juegos}"
+                        th:value="${j.id}"
+                        th:text="${j.nombre + ' (Gen ' + j.generacion + ')'}">
+                </option>
+            </select>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancelar"
+                        onclick="document.getElementById('modalNuevaRun').classList.remove('abierto')">Cancelar</button>
+                <button type="submit" class="btn-crear-run">Crear Run</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('modalNuevaRun').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('abierto');
+    });
+</script>
+</body>
+</html>

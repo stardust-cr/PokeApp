@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuarios - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topbar { background: #cc0000; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <span>👥 Gestión de Usuarios</span>
+    <div style="display:flex; gap:16px;">
+        <a th:href="@{/web/admin}">← Panel</a>
+        <a th:href="@{/web/logout}">Cerrar sesión</a>
+    </div>
+</div>
+<div class="container py-4">
+    <table class="table table-bordered table-striped bg-white rounded">
+        <thead class="table-dark">
+            <tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td th:text="${u.id}"></td>
+                <td th:text="${u.username}"></td>
+                <td th:text="${u.email}"></td>
+                <td>
+                    <span th:class="${u.rol == 'ADMIN'} ? 'badge bg-danger' : 'badge bg-secondary'"
+                          th:text="${u.rol}"></span>
+                </td>
+                <td class="d-flex gap-2">
+                    <form th:action="@{/web/admin/usuarios/{id}/rol(id=${u.id})}" method="post">
+                        <input type="hidden" name="rol" th:value="${u.rol == 'ADMIN'} ? 'USER' : 'ADMIN'">
+                        <button type="submit" class="btn btn-sm"
+                                th:class="${u.rol == 'ADMIN'} ? 'btn btn-sm btn-outline-secondary' : 'btn btn-sm btn-outline-danger'"
+                                th:text="${u.rol == 'ADMIN'} ? '↓ Quitar admin' : '↑ Hacer admin'">
+                        </button>
+                    </form>
+                    <form th:action="@{/web/admin/usuarios/{id}/eliminar(id=${u.id})}" method="post">
+                        <button type="button" class="btn btn-sm btn-danger"
+                                th:data-nombre="${u.username}"
+                                onclick="confirmarEliminar(this)">
+                            🗑 Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+function confirmarEliminar(btn) {
+    var nombre = btn.getAttribute('data-nombre');
+    if (confirm('¿Eliminar a ' + nombre + '?')) {
+        btn.closest('form').submit();
+    }
+}
+</script>
+</body>
+</html>

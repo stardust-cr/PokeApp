@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Wishlist — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        .topbar { display:flex; justify-content:space-between; align-items:center; background-color:#E63946; padding:14px 24px; box-shadow:0 4px 0 #C62828; }
+        .topbar-logo { display:flex; align-items:center; gap:10px; color:white; font-size:1.4rem; font-weight:bold; -webkit-text-stroke:2px #1a1a1a; text-decoration:none; }
+        .pokeball { width:36px; height:36px; border-radius:50%; border:3px solid #1a1a1a; position:relative; overflow:hidden; flex-shrink:0; }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .back-btn { color:white; text-decoration:none; font-weight:bold; background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px; font-size:0.9rem; transition:background 0.2s; }
+        .back-btn:hover { background:rgba(255,255,255,0.35); }
+
+        .container { max-width: 900px; margin: 32px auto; padding: 0 20px; }
+
+        .hero { background:white; border-radius:25px; padding:28px; border:3px solid #FDE68A; box-shadow:0 6px 0 #FDE68A; display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:16px; }
+        .hero-texto h1 { font-size:1.5rem; color:#333; margin-bottom:4px; }
+        .hero-texto p  { color:#AAA; font-size:0.88rem; }
+        .hero-stat-num   { font-size:2.5rem; font-weight:800; color:#E63946; line-height:1; }
+        .hero-stat-label { font-size:0.78rem; color:#AAA; text-transform:uppercase; letter-spacing:1px; }
+
+        /* ── PANEL AÑADIR ── */
+        .add-card { background:white; border-radius:22px; padding:22px 24px; border:3px solid #BAE6FD; box-shadow:0 5px 0 #D0EEFF; margin-bottom:24px; }
+        .add-card h3 { font-size:1rem; color:#555; margin-bottom:16px; }
+
+        .search-wrap { position:relative; margin-bottom:6px; }
+        .search-wrap input {
+            width:100%; padding:12px 16px 12px 42px; border:2px solid #EEE;
+            border-radius:14px; font-size:0.95rem; color:#333; outline:none;
+            transition:border-color 0.2s; background:#FAFAFA;
+        }
+        .search-wrap input:focus { border-color:#BAE6FD; background:white; }
+        .search-wrap input::placeholder { color:#BBB; }
+        .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:1rem; pointer-events:none; }
+
+        .dropdown {
+            background:white; border:2px solid #EEE; border-radius:14px;
+            max-height:250px; overflow-y:auto; display:none;
+            box-shadow:0 8px 20px rgba(0,0,0,0.08); margin-bottom:12px;
+        }
+        .dropdown.open { display:block; }
+        .drop-item {
+            display:flex; align-items:center; gap:12px;
+            padding:11px 16px; cursor:pointer; border-bottom:2px solid #F8F8F8; transition:background 0.15s;
+        }
+        .drop-item:last-child { border-bottom:none; }
+        .drop-item:hover { background:#F0F8FF; }
+        .drop-emoji { font-size:1.3rem; width:32px; text-align:center; flex-shrink:0; }
+        .drop-nombre { font-weight:bold; font-size:0.88rem; color:#333; }
+        .drop-sub    { font-size:0.75rem; color:#AAA; margin-top:1px; }
+        .drop-msg    { padding:14px 16px; text-align:center; color:#AAA; font-size:0.85rem; }
+
+        .carta-seleccionada {
+            display:none; align-items:center; gap:12px;
+            background:#E1F5FE; border:2px solid #BAE6FD; border-radius:12px;
+            padding:11px 16px; margin-bottom:12px;
+        }
+        .carta-seleccionada.visible { display:flex; }
+        .sel-emoji  { font-size:1.5rem; }
+        .sel-info   { flex:1; }
+        .sel-nombre { font-weight:bold; font-size:0.9rem; color:#0369A1; }
+        .sel-rareza { font-size:0.75rem; color:#7AACCF; margin-top:2px; }
+        .btn-quitar { background:none; border:none; cursor:pointer; color:#AAA; font-size:1rem; transition:color 0.2s; padding:4px; }
+        .btn-quitar:hover { color:#E63946; }
+
+        .add-bottom { display:flex; gap:10px; flex-wrap:wrap; }
+        .add-bottom input[type="number"] {
+            padding:11px 14px; border:2px solid #EEE; border-radius:12px;
+            font-size:0.9rem; color:#333; outline:none; flex:1; min-width:160px;
+            transition:border-color 0.2s; background:#FAFAFA;
+        }
+        .add-bottom input[type="number"]:focus { border-color:#BAE6FD; background:white; }
+        .add-bottom input[type="number"]::placeholder { color:#BBB; }
+        .btn-add { background:#BAE6FD; color:#0369A1; border:none; border-radius:12px; padding:11px 22px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #7DD3FC; transition:all 0.2s; font-size:0.9rem; white-space:nowrap; }
+        .btn-add:hover { transform:translateY(2px); box-shadow:0 2px 0 #7DD3FC; }
+
+        .seccion-titulo { font-size:1rem; font-weight:bold; color:#555; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .count-badge { background:#F0F0F0; color:#888; font-size:0.78rem; padding:2px 10px; border-radius:50px; font-weight:normal; }
+
+        .grid-wish { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:16px; }
+
+        .wish-card { background:white; border-radius:20px; overflow:hidden; border:3px solid #FFB3D9; box-shadow:0 5px 0 #FFD1E8; display:flex; flex-direction:column; transition:transform 0.2s; }
+        .wish-card:hover { transform:translateY(-4px); }
+        .wish-banner { background:linear-gradient(135deg,#FFD1E8,#FFB3D9); padding:20px; text-align:center; font-size:2.2rem; }
+        .wish-body { padding:14px 16px; flex:1; }
+        .wish-nombre { font-weight:bold; font-size:0.95rem; color:#333; margin-bottom:4px; }
+        .wish-rareza { font-size:0.78rem; color:#AAA; margin-bottom:8px; }
+        .wish-precio-max { font-size:0.82rem; color:#888; background:#FFF9C4; border:2px dashed #FDE68A; padding:4px 10px; border-radius:8px; display:inline-block; }
+        .wish-footer { padding:10px 14px; border-top:2px solid #FEE; display:flex; gap:8px; }
+        .btn-remove { flex:1; background:white; color:#E63946; border:2px solid #FFB3B3; border-radius:10px; padding:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; transition:0.2s; }
+        .btn-remove:hover { background:#FEE2E2; }
+        .btn-ir-mercado { flex:1; background:#FF8A8A; color:white; border:none; border-radius:10px; padding:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; box-shadow:0 3px 0 #E57373; transition:all 0.2s; text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center; }
+        .btn-ir-mercado:hover { transform:translateY(2px); box-shadow:0 1px 0 #E57373; }
+
+        .estado-vacio { text-align:center; padding:50px 20px; color:#CCC; }
+        .estado-vacio .icono { font-size:2.5rem; margin-bottom:14px; }
+        .estado-vacio h3 { color:#BBB; font-size:1rem; margin-bottom:6px; }
+
+        .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 28px; color:white; font-weight:bold; border-radius:50px; display:none; z-index:2000; font-size:0.9rem; }
+        .toast.visible { display:block; }
+        .toast.exito { background:#81C784; }
+        .toast.error { background:#E57373; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball"><div class="pokeball-linea"></div><div class="btn-center"></div></div>
+        Lista de Deseos
+    </a>
+    <a th:href="@{/web/home}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="container">
+
+    <div class="hero">
+        <div class="hero-texto">
+            <h1>⭐ Mi Wishlist</h1>
+            <p>Las cartas que quieres conseguir</p>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num" id="statTotal">0</div>
+            <div class="hero-stat-label">Cartas deseadas</div>
+        </div>
+    </div>
+
+    <div class="add-card">
+        <h3>➕ Añadir carta a la wishlist</h3>
+
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="inputBusqueda" placeholder="Escribe el nombre de la carta..." autocomplete="off"/>
+        </div>
+        <div class="dropdown" id="dropdown"></div>
+
+        <div class="carta-seleccionada" id="cartaSeleccionada">
+            <span class="sel-emoji" id="selEmoji">🃏</span>
+            <div class="sel-info">
+                <div class="sel-nombre" id="selNombre">—</div>
+                <div class="sel-rareza" id="selRareza">—</div>
+            </div>
+            <button class="btn-quitar" onclick="limpiar()" title="Quitar selección">✕</button>
+        </div>
+
+        <div class="add-bottom">
+            <input type="number" id="precioMax" placeholder="Precio máximo en € (opcional)" min="0" step="0.01"/>
+            <button class="btn-add" onclick="añadir()">+ Añadir a wishlist</button>
+        </div>
+    </div>
+
+    <div class="seccion-titulo">
+        Mis cartas deseadas
+        <span class="count-badge" id="countWish">0</span>
+    </div>
+
+    <div class="grid-wish" id="gridWish">
+        <div class="estado-vacio" style="grid-column:1/-1">
+            <div class="icono">⏳</div><h3>Cargando wishlist...</h3>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script th:inline="javascript">
+    const USUARIO_ID = /*[[${usuarioId}]]*/ 1;
+    const API_WISH   = '/api/wishlist';
+    const API_CARTAS = '/api/cartas';
+
+    const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
+
+    let cartaSeleccionada = null;
+    let timer = null;
+
+    /* ── BUSCADOR EN VIVO ── */
+    const input    = document.getElementById('inputBusqueda');
+    const dropdown = document.getElementById('dropdown');
+
+    input.addEventListener('input', () => {
+        clearTimeout(timer);
+        const q = input.value.trim();
+        if (q.length < 2) { cerrarDropdown(); return; }
+        timer = setTimeout(() => buscar(q), 350);
+    });
+
+    document.addEventListener('click', e => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) cerrarDropdown();
+    });
+
+    async function buscar(q) {
+        dropdown.innerHTML = '<div class="drop-msg">Buscando...</div>';
+        dropdown.classList.add('open');
+        try {
+            const res    = await fetch(`${API_CARTAS}/buscar?nombre=${encodeURIComponent(q)}`);
+            const cartas = await res.json();
+            if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados para "' + q + '"</div>'; return; }
+            dropdown.innerHTML = cartas.slice(0, 10).map(c => {
+                const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
+                return `<div class="drop-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}','${esc(c.set||'')}')">
+                    <div class="drop-emoji">${emoji}</div>
+                    <div>
+                        <div class="drop-nombre">${c.nombre}</div>
+                        <div class="drop-sub">${(c.rareza||'COMUN').replace('_',' ')}${c.set?' · '+c.set:''}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
+    }
+
+    function seleccionar(id, nombre, rareza, set) {
+        cartaSeleccionada = { id, nombre, rareza };
+        input.value = nombre;
+        cerrarDropdown();
+        document.getElementById('selEmoji').textContent  = RAREZA_EMOJI[rareza] || '🃏';
+        document.getElementById('selNombre').textContent = nombre;
+        document.getElementById('selRareza').textContent = rareza.replace('_',' ') + (set ? ' · ' + set : '');
+        document.getElementById('cartaSeleccionada').classList.add('visible');
+    }
+
+    function limpiar() {
+        cartaSeleccionada = null;
+        input.value = '';
+        document.getElementById('cartaSeleccionada').classList.remove('visible');
+    }
+
+    function cerrarDropdown() { dropdown.classList.remove('open'); dropdown.innerHTML = ''; }
+
+    /* ── AÑADIR ── */
+    async function añadir() {
+        if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', 'error'); return; }
+        const precioMax = document.getElementById('precioMax').value || null;
+        try {
+            const res = await fetch(API_WISH, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuarioId: USUARIO_ID, cartaId: cartaSeleccionada.id, precioMaximo: precioMax ? parseFloat(precioMax) : null })
+            });
+            if (res.ok) {
+                toast('Añadido a tu wishlist ⭐', 'exito');
+                limpiar();
+                document.getElementById('precioMax').value = '';
+                cargarWishlist();
+            } else {
+                const e = await res.text();
+                toast('Error: ' + e, 'error');
+            }
+        } catch { toast('Error de red', 'error'); }
+    }
+
+    /* ── CARGAR LISTA ── */
+    async function cargarWishlist() {
+        try {
+            const res   = await fetch(`${API_WISH}/${USUARIO_ID}`);
+            const items = await res.json();
+            renderWishlist(items);
+        } catch {
+            document.getElementById('gridWish').innerHTML =
+                '<div class="estado-vacio" style="grid-column:1/-1"><div class="icono">⚠️</div><h3>Error al cargar</h3></div>';
+        }
+    }
+
+    function renderWishlist(items) {
+        const grid = document.getElementById('gridWish');
+        document.getElementById('statTotal').textContent = items.length;
+        document.getElementById('countWish').textContent = items.length;
+        if (!items.length) {
+            grid.innerHTML = `<div class="estado-vacio" style="grid-column:1/-1">
+                <div class="icono">🌟</div><h3>Tu wishlist está vacía</h3>
+                <p>Busca cartas arriba y añádelas</p></div>`;
+            return;
+        }
+        grid.innerHTML = items.map(item => {
+            const rareza = item.cartaRareza || 'COMUN';
+            const emoji  = RAREZA_EMOJI[rareza] || '🃏';
+            return `<div class="wish-card" id="wish-${item.id}">
+                <div class="wish-banner">${emoji}</div>
+                <div class="wish-body">
+                    <div class="wish-nombre">${item.cartaNombre || 'Carta #' + item.cartaId}</div>
+                    <div class="wish-rareza">${rareza.replace('_',' ')}</div>
+                    ${item.precioMaximo ? `<div class="wish-precio-max">Máx: €${parseFloat(item.precioMaximo).toFixed(2)}</div>` : ''}
+                </div>
+                <div class="wish-footer">
+                    <button class="btn-remove" onclick="eliminar(${item.id})">🗑 Quitar</button>
+                    <a class="btn-ir-mercado" href="/web/mercado?cartaId=${item.cartaId}">🔍 Buscar</a>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function eliminar(itemId) {
+        const el = document.getElementById('wish-' + itemId);
+        if (el) { el.style.opacity='0'; el.style.transform='scale(0.9)'; el.style.transition='0.25s'; }
+        try {
+            const res = await fetch(`${API_WISH}/${itemId}`, { method: 'DELETE' });
+            if (res.ok) { setTimeout(cargarWishlist, 280); toast('Eliminado de tu wishlist', 'exito'); }
+            else toast('No se pudo eliminar', 'error');
+        } catch { toast('Error de red', 'error'); }
+    }
+
+    function toast(msg, tipo='exito') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = `toast ${tipo} visible`;
+        setTimeout(() => t.classList.remove('visible'), 3000);
+    }
+
+    function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+    cargarWishlist();
+</script>
+</body>
+</html>
