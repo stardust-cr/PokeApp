@@ -35,7 +35,7 @@ public class WishlistRestController {
         }
     }
 
-    @DeleteMapping("/{itemId}")
+   @DeleteMapping("/{itemId}")
 public ResponseEntity<?> eliminar(@PathVariable Long itemId) {
     try {
         ventaService.eliminarDeDeseosPorId(itemId);

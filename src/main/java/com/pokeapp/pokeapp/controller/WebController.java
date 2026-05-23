@@ -280,5 +280,55 @@ public String testHash() {
     return passwordEncoder.encode("password123");
 }
 
+@PostMapping("/perfil/username")
+public String cambiarUsername(@RequestParam String nuevoUsername,
+                               HttpSession session, Model model) {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    if (userRepository.existsByUsername(nuevoUsername)) {
+        session.setAttribute("perfilError", "Ese nombre ya está en uso.");
+        return "redirect:/web/perfil";
+    }
+    User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    usuario.setUsername(nuevoUsername);
+    userRepository.save(usuario);
+    session.setAttribute("username", nuevoUsername);
+    session.setAttribute("perfilOk", "Nombre actualizado correctamente.");
+    return "redirect:/web/perfil";
+}
+
+@PostMapping("/perfil/avatar")
+public String cambiarAvatar(@RequestParam("imagen") MultipartFile imagen,
+                             HttpSession session) throws IOException {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    if (!imagen.isEmpty()) {
+        usuario.setProfileImage(imagen.getBytes());
+        userRepository.save(usuario);
+        session.setAttribute("perfilOk", "Foto actualizada correctamente.");
+    }
+    return "redirect:/web/perfil";
+}
+
+@PostMapping("/perfil/password")
+public String cambiarPassword(@RequestParam String passwordActual,
+                               @RequestParam String passwordNueva,
+                               HttpSession session) {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
+        session.setAttribute("perfilError", "La contraseña actual es incorrecta.");
+        return "redirect:/web/perfil";
+    }
+    usuario.setPassword(passwordEncoder.encode(passwordNueva));
+    userRepository.save(usuario);
+    session.setAttribute("perfilOk", "Contraseña actualizada correctamente.");
+    return "redirect:/web/perfil";
+}
 
 }

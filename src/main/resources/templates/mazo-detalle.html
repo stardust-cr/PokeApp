@@ -239,26 +239,26 @@
             const cartas = await res.json();
             if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados</div>'; return; }
             dropdown.innerHTML = cartas.slice(0,10).map(c => {
-                const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
-                return `<div class="drop-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}')">
-                    <div class="drop-emoji">${emoji}</div>
-                    <div>
-                        <div class="drop-nombre">${c.nombre}</div>
-                        <div class="drop-sub">${(c.rareza||'COMUN').replace('_',' ')}</div>
-                    </div>
-                </div>`;
-            }).join('');
+    const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
+    return `<div class="drop-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}','${esc(c.setCodigo||'')}','${esc(c.imagenUrl||'')}')">
+        <div class="drop-emoji">${emoji}</div>
+        <div>
+            <div class="drop-nombre">${c.nombre}</div>
+            <div class="drop-sub">${(c.rareza||'COMUN').replace('_',' ')}${c.setCodigo?' · '+c.setCodigo:''}</div>
+        </div>
+    </div>`;
+}).join('');
         } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
     }
 
-    function seleccionar(id, nombre, rareza) {
-        cartaSeleccionada = { id, nombre, rareza };
-        input.value = nombre;
-        cerrarDropdown();
-        document.getElementById('selEmoji').textContent  = RAREZA_EMOJI[rareza] || '🃏';
-        document.getElementById('selNombre').textContent = nombre;
-        document.getElementById('cartaSel').classList.add('visible');
-    }
+    function seleccionar(id, nombre, rareza, setCodigo, imagenUrl) {
+    cartaSeleccionada = { id, nombre, rareza, setCodigo, imagenUrl };
+    input.value = nombre;
+    cerrarDropdown();
+    document.getElementById('selEmoji').textContent  = RAREZA_EMOJI[rareza] || '🃏';
+    document.getElementById('selNombre').textContent = nombre;
+    document.getElementById('cartaSel').classList.add('visible');
+}
 
     function limpiar() {
         cartaSeleccionada = null;
@@ -269,21 +269,36 @@
 
     // ── Añadir carta ──
     async function agregarCarta() {
-        if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', false); return; }
-        const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
-        try {
-            const res = await fetch(`${API}/${MAZO_ID}/cartas/${cartaSeleccionada.id}?cantidad=${cantidad}`, { method:'POST' });
-            if (res.ok) {
-                toast('Carta añadida al mazo ✓', true);
-                limpiar();
-                document.getElementById('cantidad').value = 1;
-                cargarCartas();
-            } else {
-                const e = await res.json().catch(()=>({}));
-                toast(e.mensaje || 'Error al añadir', false);
-            }
-        } catch { toast('Error de conexión', false); }
-    }
+    if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', false); return; }
+    const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+    try {
+        // Primero importar la carta para obtener ID correcto
+        let cartaId = cartaSeleccionada.id;
+        if (cartaSeleccionada.setCodigo) {
+            const imp = await fetch('/api/cartas/importar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: cartaSeleccionada.nombre,
+                    setCodigo: cartaSeleccionada.setCodigo,
+                    rareza: cartaSeleccionada.rareza,
+                    imagenUrl: cartaSeleccionada.imagenUrl || ''
+                })
+            });
+            if (imp.ok) { const data = await imp.json(); cartaId = data.id; }
+        }
+        const res = await fetch(`${API}/${MAZO_ID}/cartas/${cartaId}?cantidad=${cantidad}`, { method:'POST' });
+        if (res.ok) {
+            toast('Carta añadida al mazo ✓', true);
+            limpiar();
+            document.getElementById('cantidad').value = 1;
+            cargarCartas();
+        } else {
+            const e = await res.json().catch(()=>{});
+            toast(e?.mensaje || 'Error al añadir', false);
+        }
+    } catch { toast('Error de conexión', false); }
+}
 
     // ── Quitar carta ──
     async function quitarCarta(cartaId) {
