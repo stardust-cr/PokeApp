@@ -99,10 +99,7 @@ public class ColeccionWebController {
         return "coleccion";
     }
 
-    @GetMapping("/mazos")
-    public String mazos() {
-        return "mazos";
-    }
+  
 
     @GetMapping("/valoraciones")
 public String valoraciones(HttpSession session, Model model) {
