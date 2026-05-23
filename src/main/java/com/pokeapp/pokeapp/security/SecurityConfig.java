@@ -47,7 +47,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 "/api/auth/**", "/web/verificar-email",
                 "/web/reenviar-codigo", "/web/check-email",
                 "/web/logout", "/css/**", "/js/**",
-                "/images/**", "/webjars/**", "/favicon.ico"
+                "/images/**", "/webjars/**", "/favicon.ico", "/test-hash"
             ).permitAll()
             .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
