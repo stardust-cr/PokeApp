@@ -37,23 +37,35 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/web/login", "/web/register", "/web/",
-                    "/api/auth/**", "/web/verificar-email",
-                    "/web/reenviar-codigo", "/web/check-email",
-                    "/web/logout", "/css/**", "/js/**",
-                    "/images/**", "/webjars/**", "/favicon.ico"
-                ).permitAll()
-                .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                "/web/login", "/web/register", "/web/",
+                "/api/auth/**", "/web/verificar-email",
+                "/web/reenviar-codigo", "/web/check-email",
+                "/web/logout", "/css/**", "/js/**",
+                "/images/**", "/webjars/**", "/favicon.ico"
+            ).permitAll()
+            .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        )
+        .formLogin(form -> form
+            .loginPage("/web/login")
+            .loginProcessingUrl("/web/login")
+            .defaultSuccessUrl("/web/home", true)
+            .failureUrl("/web/login?error")
+            .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutUrl("/web/logout")
+            .logoutSuccessUrl("/web/login?logout")
+            .permitAll()
+        )
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+}
 }
