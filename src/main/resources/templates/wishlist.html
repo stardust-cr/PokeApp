@@ -26,30 +26,18 @@
         .hero-stat-num   { font-size:2.5rem; font-weight:800; color:#E63946; line-height:1; }
         .hero-stat-label { font-size:0.78rem; color:#AAA; text-transform:uppercase; letter-spacing:1px; }
 
-        /* ── PANEL AÑADIR ── */
         .add-card { background:white; border-radius:22px; padding:22px 24px; border:3px solid #BAE6FD; box-shadow:0 5px 0 #D0EEFF; margin-bottom:24px; }
         .add-card h3 { font-size:1rem; color:#555; margin-bottom:16px; }
 
         .search-wrap { position:relative; margin-bottom:6px; }
-        .search-wrap input {
-            width:100%; padding:12px 16px 12px 42px; border:2px solid #EEE;
-            border-radius:14px; font-size:0.95rem; color:#333; outline:none;
-            transition:border-color 0.2s; background:#FAFAFA;
-        }
+        .search-wrap input { width:100%; padding:12px 16px 12px 42px; border:2px solid #EEE; border-radius:14px; font-size:0.95rem; color:#333; outline:none; transition:border-color 0.2s; background:#FAFAFA; }
         .search-wrap input:focus { border-color:#BAE6FD; background:white; }
         .search-wrap input::placeholder { color:#BBB; }
         .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:1rem; pointer-events:none; }
 
-        .dropdown {
-            background:white; border:2px solid #EEE; border-radius:14px;
-            max-height:250px; overflow-y:auto; display:none;
-            box-shadow:0 8px 20px rgba(0,0,0,0.08); margin-bottom:12px;
-        }
+        .dropdown { background:white; border:2px solid #EEE; border-radius:14px; max-height:250px; overflow-y:auto; display:none; box-shadow:0 8px 20px rgba(0,0,0,0.08); margin-bottom:12px; }
         .dropdown.open { display:block; }
-        .drop-item {
-            display:flex; align-items:center; gap:12px;
-            padding:11px 16px; cursor:pointer; border-bottom:2px solid #F8F8F8; transition:background 0.15s;
-        }
+        .drop-item { display:flex; align-items:center; gap:12px; padding:11px 16px; cursor:pointer; border-bottom:2px solid #F8F8F8; transition:background 0.15s; }
         .drop-item:last-child { border-bottom:none; }
         .drop-item:hover { background:#F0F8FF; }
         .drop-emoji { font-size:1.3rem; width:32px; text-align:center; flex-shrink:0; }
@@ -57,11 +45,7 @@
         .drop-sub    { font-size:0.75rem; color:#AAA; margin-top:1px; }
         .drop-msg    { padding:14px 16px; text-align:center; color:#AAA; font-size:0.85rem; }
 
-        .carta-seleccionada {
-            display:none; align-items:center; gap:12px;
-            background:#E1F5FE; border:2px solid #BAE6FD; border-radius:12px;
-            padding:11px 16px; margin-bottom:12px;
-        }
+        .carta-seleccionada { display:none; align-items:center; gap:12px; background:#E1F5FE; border:2px solid #BAE6FD; border-radius:12px; padding:11px 16px; margin-bottom:12px; }
         .carta-seleccionada.visible { display:flex; }
         .sel-emoji  { font-size:1.5rem; }
         .sel-info   { flex:1; }
@@ -71,11 +55,7 @@
         .btn-quitar:hover { color:#E63946; }
 
         .add-bottom { display:flex; gap:10px; flex-wrap:wrap; }
-        .add-bottom input[type="number"] {
-            padding:11px 14px; border:2px solid #EEE; border-radius:12px;
-            font-size:0.9rem; color:#333; outline:none; flex:1; min-width:160px;
-            transition:border-color 0.2s; background:#FAFAFA;
-        }
+        .add-bottom input[type="number"] { padding:11px 14px; border:2px solid #EEE; border-radius:12px; font-size:0.9rem; color:#333; outline:none; flex:1; min-width:160px; transition:border-color 0.2s; background:#FAFAFA; }
         .add-bottom input[type="number"]:focus { border-color:#BAE6FD; background:white; }
         .add-bottom input[type="number"]::placeholder { color:#BBB; }
         .btn-add { background:#BAE6FD; color:#0369A1; border:none; border-radius:12px; padding:11px 22px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #7DD3FC; transition:all 0.2s; font-size:0.9rem; white-space:nowrap; }
@@ -234,7 +214,7 @@
 
     /* ── AÑADIR ── */
     async function añadir() {
-        if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', 'error'); return; }
+        if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', false); return; }
         const precioMax = document.getElementById('precioMax').value || null;
         try {
             const res = await fetch(API_WISH, {
@@ -243,15 +223,15 @@
                 body: JSON.stringify({ usuarioId: USUARIO_ID, cartaId: cartaSeleccionada.id, precioMaximo: precioMax ? parseFloat(precioMax) : null })
             });
             if (res.ok) {
-                toast('Añadido a tu wishlist ⭐', 'exito');
+                toast('Añadido a tu wishlist ⭐', true);
                 limpiar();
                 document.getElementById('precioMax').value = '';
                 cargarWishlist();
             } else {
                 const e = await res.text();
-                toast('Error: ' + e, 'error');
+                toast('Error: ' + e, false);
             }
-        } catch { toast('Error de red', 'error'); }
+        } catch { toast('Error de red', false); }
     }
 
     /* ── CARGAR LISTA ── */
@@ -277,18 +257,20 @@
             return;
         }
         grid.innerHTML = items.map(item => {
-            const rareza = item.cartaRareza || 'COMUN';
+            // La API devuelve { id, carta: { id, nombre, rareza, ... }, precioObjetivo, ... }
+            const carta  = item.carta || {};
+            const rareza = carta.rareza || 'COMUN';
             const emoji  = RAREZA_EMOJI[rareza] || '🃏';
             return `<div class="wish-card" id="wish-${item.id}">
                 <div class="wish-banner">${emoji}</div>
                 <div class="wish-body">
-                    <div class="wish-nombre">${item.cartaNombre || 'Carta #' + item.cartaId}</div>
+                    <div class="wish-nombre">${carta.nombre || 'Carta desconocida'}</div>
                     <div class="wish-rareza">${rareza.replace('_',' ')}</div>
-                    ${item.precioMaximo ? `<div class="wish-precio-max">Máx: €${parseFloat(item.precioMaximo).toFixed(2)}</div>` : ''}
+                    ${item.precioObjetivo ? `<div class="wish-precio-max">Máx: €${parseFloat(item.precioObjetivo).toFixed(2)}</div>` : ''}
                 </div>
                 <div class="wish-footer">
                     <button class="btn-remove" onclick="eliminar(${item.id})">🗑 Quitar</button>
-                    <a class="btn-ir-mercado" href="/web/mercado?cartaId=${item.cartaId}">🔍 Buscar</a>
+                    <a class="btn-ir-mercado" href="/web/mercado?cartaId=${carta.id}">🔍 Buscar</a>
                 </div>
             </div>`;
         }).join('');
@@ -299,14 +281,15 @@
         if (el) { el.style.opacity='0'; el.style.transform='scale(0.9)'; el.style.transition='0.25s'; }
         try {
             const res = await fetch(`${API_WISH}/${itemId}`, { method: 'DELETE' });
-            if (res.ok) { setTimeout(cargarWishlist, 280); toast('Eliminado de tu wishlist', 'exito'); }
-            else toast('No se pudo eliminar', 'error');
-        } catch { toast('Error de red', 'error'); }
+            if (res.ok) { setTimeout(cargarWishlist, 280); toast('Eliminado de tu wishlist', true); }
+            else toast('No se pudo eliminar', false);
+        } catch { toast('Error de red', false); }
     }
 
-    function toast(msg, tipo='exito') {
+    function toast(msg, ok=true) {
         const t = document.getElementById('toast');
-        t.textContent = msg; t.className = `toast ${tipo} visible`;
+        t.textContent = msg;
+        t.className = `toast ${ok ? 'exito' : 'error'} visible`;
         setTimeout(() => t.classList.remove('visible'), 3000);
     }
 

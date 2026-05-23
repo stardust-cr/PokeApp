@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Detalle Mazo — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        .topbar { display:flex; justify-content:space-between; align-items:center; background-color:#E63946; padding:14px 24px; box-shadow:0 4px 0 #C62828; }
+        .topbar-logo { display:flex; align-items:center; gap:10px; color:white; font-size:1.4rem; font-weight:bold; -webkit-text-stroke:2px #1a1a1a; text-decoration:none; }
+        .pokeball { width:36px; height:36px; border-radius:50%; border:3px solid #1a1a1a; position:relative; overflow:hidden; flex-shrink:0; }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .back-btn { color:white; text-decoration:none; font-weight:bold; background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px; font-size:0.9rem; transition:background 0.2s; }
+        .back-btn:hover { background:rgba(255,255,255,0.35); }
+
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
+
+        /* HERO */
+        .hero { background:white; border-radius:25px; padding:28px; border:3px solid #FDE68A; box-shadow:0 6px 0 #FDE68A; display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:16px; }
+        .hero-texto h1 { font-size:1.5rem; color:#333; margin-bottom:4px; }
+        .hero-texto p  { color:#AAA; font-size:0.88rem; }
+        .hero-stats { display:flex; gap:24px; flex-wrap:wrap; }
+        .hero-stat { text-align:center; }
+        .hero-stat-num   { font-size:2rem; font-weight:800; color:#E63946; line-height:1; }
+        .hero-stat-label { font-size:0.72rem; color:#AAA; text-transform:uppercase; letter-spacing:1px; }
+
+        /* AÑADIR CARTA */
+        .add-card { background:white; border-radius:22px; padding:22px 24px; border:3px solid #BAE6FD; box-shadow:0 5px 0 #D0EEFF; margin-bottom:24px; }
+        .add-card h3 { font-size:1rem; color:#555; margin-bottom:16px; }
+        .search-wrap { position:relative; margin-bottom:8px; }
+        .search-wrap input { width:100%; padding:12px 16px 12px 42px; border:2px solid #EEE; border-radius:14px; font-size:0.95rem; color:#333; outline:none; transition:border-color 0.2s; background:#FAFAFA; }
+        .search-wrap input:focus { border-color:#BAE6FD; background:white; }
+        .search-wrap input::placeholder { color:#BBB; }
+        .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:1rem; pointer-events:none; }
+        .dropdown { background:white; border:2px solid #EEE; border-radius:14px; max-height:220px; overflow-y:auto; display:none; box-shadow:0 8px 20px rgba(0,0,0,0.08); margin-bottom:10px; }
+        .dropdown.open { display:block; }
+        .drop-item { display:flex; align-items:center; gap:12px; padding:11px 16px; cursor:pointer; border-bottom:2px solid #F8F8F8; transition:background 0.15s; }
+        .drop-item:last-child { border-bottom:none; }
+        .drop-item:hover { background:#F0F8FF; }
+        .drop-emoji { font-size:1.3rem; width:32px; text-align:center; }
+        .drop-nombre { font-weight:bold; font-size:0.88rem; color:#333; }
+        .drop-sub { font-size:0.75rem; color:#AAA; margin-top:1px; }
+        .drop-msg { padding:14px 16px; text-align:center; color:#AAA; font-size:0.85rem; }
+        .add-bottom { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .cantidad-wrap { display:flex; align-items:center; gap:8px; }
+        .cantidad-wrap label { font-size:0.85rem; color:#888; white-space:nowrap; }
+        .cantidad-wrap input { width:70px; padding:10px 12px; border:2px solid #EEE; border-radius:12px; font-size:0.9rem; outline:none; text-align:center; }
+        .btn-add { background:#BAE6FD; color:#0369A1; border:none; border-radius:12px; padding:11px 22px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #7DD3FC; transition:all 0.2s; font-size:0.9rem; white-space:nowrap; }
+        .btn-add:hover { transform:translateY(2px); box-shadow:0 2px 0 #7DD3FC; }
+        .carta-sel-pill { display:none; align-items:center; gap:8px; background:#E1F5FE; border:2px solid #BAE6FD; border-radius:10px; padding:8px 14px; margin-bottom:10px; }
+        .carta-sel-pill.visible { display:flex; }
+        .carta-sel-pill span { font-weight:bold; font-size:0.88rem; color:#0369A1; flex:1; }
+        .btn-quitar { background:none; border:none; cursor:pointer; color:#AAA; font-size:1rem; padding:2px; }
+        .btn-quitar:hover { color:#E63946; }
+
+        /* GRID CARTAS */
+        .seccion-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+        .seccion-titulo { font-size:1.05rem; font-weight:bold; color:#555; display:flex; align-items:center; gap:8px; }
+        .count-badge { background:#F0F0F0; color:#888; font-size:0.78rem; padding:2px 10px; border-radius:50px; font-weight:normal; }
+
+        .grid-cartas { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px; }
+
+        .carta-card { background:white; border-radius:18px; overflow:hidden; border:3px solid #FFB3D9; box-shadow:0 5px 0 #FFD1E8; display:flex; flex-direction:column; transition:transform 0.2s; }
+        .carta-card:hover { transform:translateY(-4px); }
+        .carta-banner { padding:20px; text-align:center; font-size:2rem; }
+        .carta-banner-COMUN       { background:linear-gradient(135deg,#F0F0F0,#DDD); }
+        .carta-banner-POCO_COMUN  { background:linear-gradient(135deg,#D1FAE5,#A7F3D0); }
+        .carta-banner-RARA        { background:linear-gradient(135deg,#DBEAFE,#BAE6FD); }
+        .carta-banner-ULTRA_RARA  { background:linear-gradient(135deg,#FEF3C7,#FDE68A); }
+        .carta-banner-SECRETA     { background:linear-gradient(135deg,#EDE9FE,#DDD6FE); }
+        .carta-banner-RAINBOW     { background:linear-gradient(135deg,#FFE4E6,#FEE2E2,#FEF3C7,#D1FAE5,#DBEAFE,#EDE9FE); }
+        .carta-body { padding:12px 14px; flex:1; }
+        .carta-nombre { font-weight:bold; font-size:0.9rem; color:#333; margin-bottom:3px; }
+        .carta-rareza { font-size:0.75rem; color:#AAA; }
+        .carta-footer { padding:8px 12px; border-top:2px solid #FEE; display:flex; align-items:center; gap:8px; }
+        .cantidad-chip { background:#FFF9C4; color:#78650A; border:2px solid #FDE68A; border-radius:8px; padding:3px 10px; font-size:0.8rem; font-weight:bold; }
+        .btn-quitar-carta { margin-left:auto; background:white; color:#E63946; border:2px solid #FFB3B3; border-radius:8px; padding:5px 10px; cursor:pointer; font-size:0.8rem; font-weight:bold; transition:0.2s; }
+        .btn-quitar-carta:hover { background:#FEE2E2; }
+
+        .estado-vacio { text-align:center; padding:50px 20px; color:#CCC; }
+        .estado-vacio .icono { font-size:2.5rem; margin-bottom:14px; }
+        .estado-vacio h3 { color:#BBB; font-size:1rem; margin-bottom:6px; }
+
+        .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 28px; color:white; font-weight:bold; border-radius:50px; display:none; z-index:2000; font-size:0.9rem; }
+        .toast.visible { display:block; }
+        .toast.exito { background:#81C784; }
+        .toast.error { background:#E57373; }
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a th:href="@{/web/mazos}" class="topbar-logo">
+        <div class="pokeball"><div class="pokeball-linea"></div><div class="btn-center"></div></div>
+        <span id="topbarNombre">Mis Mazos</span>
+    </a>
+    <a th:href="@{/web/mazos}" class="back-btn">← Volver</a>
+</nav>
+
+<div class="container">
+
+    <div class="hero">
+        <div class="hero-texto">
+            <h1 id="heroNombre">🗂️ Cargando...</h1>
+            <p id="heroDesc">—</p>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-num" id="statCartas">0</div>
+                <div class="hero-stat-label">Cartas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AÑADIR CARTA -->
+    <div class="add-card">
+        <h3>➕ Añadir carta al mazo</h3>
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="inputBusqueda" placeholder="Busca una carta por nombre..." autocomplete="off"/>
+        </div>
+        <div class="dropdown" id="dropdown"></div>
+        <div class="carta-sel-pill" id="cartaSel">
+            <span id="selEmoji">🃏</span>
+            <span id="selNombre">—</span>
+            <button class="btn-quitar" onclick="limpiar()">✕</button>
+        </div>
+        <div class="add-bottom">
+            <div class="cantidad-wrap">
+                <label>Cantidad:</label>
+                <input type="number" id="cantidad" value="1" min="1" max="4"/>
+            </div>
+            <button class="btn-add" onclick="agregarCarta()">+ Añadir</button>
+        </div>
+    </div>
+
+    <!-- LISTA DE CARTAS -->
+    <div class="seccion-header">
+        <div class="seccion-titulo">
+            Cartas del mazo
+            <span class="count-badge" id="countCartas">0</span>
+        </div>
+    </div>
+
+    <div class="grid-cartas" id="gridCartas">
+        <div class="estado-vacio" style="grid-column:1/-1">
+            <div class="icono">⏳</div><h3>Cargando cartas...</h3>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script th:inline="javascript">
+    const MAZO_ID = /*[[${mazoId}]]*/ 1;
+    const API     = '/api/mazos';
+    const API_CARTAS = '/api/cartas';
+
+    const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
+
+    let cartaSeleccionada = null;
+    let timer = null;
+
+    // ── Cargar info del mazo ──
+    async function cargarMazo() {
+        try {
+            const res = await fetch(`${API}/usuario/0`); // fallback — info viene del detalle de cartas
+        } catch {}
+        cargarCartas();
+    }
+
+    // ── Cargar cartas del mazo ──
+    async function cargarCartas() {
+        try {
+            const res   = await fetch(`${API}/${MAZO_ID}/cartas`);
+            if (!res.ok) throw new Error();
+            const cartas = await res.json();
+            document.getElementById('statCartas').textContent  = cartas.length;
+            document.getElementById('countCartas').textContent = cartas.length;
+            renderCartas(cartas);
+        } catch {
+            document.getElementById('gridCartas').innerHTML =
+                '<div class="estado-vacio" style="grid-column:1/-1"><div class="icono">⚠️</div><h3>Error al cargar cartas</h3></div>';
+        }
+    }
+
+    function renderCartas(cartas) {
+        const grid = document.getElementById('gridCartas');
+        if (!cartas.length) {
+            grid.innerHTML = `<div class="estado-vacio" style="grid-column:1/-1">
+                <div class="icono">🃏</div>
+                <h3>El mazo está vacío</h3>
+                <p>Añade cartas usando el buscador de arriba</p>
+            </div>`;
+            return;
+        }
+        // Actualizar nombre del mazo en hero si viene en las cartas
+        grid.innerHTML = cartas.map(c => {
+            const rareza = c.cartaRareza || 'COMUN';
+            const emoji  = RAREZA_EMOJI[rareza] || '🃏';
+            const bannerClass = 'carta-banner-' + rareza;
+            return `<div class="carta-card" id="cc-${c.cartaId}">
+                <div class="carta-banner ${bannerClass}">${emoji}</div>
+                <div class="carta-body">
+                    <div class="carta-nombre">${c.cartaNombre || 'Carta #' + c.cartaId}</div>
+                    <div class="carta-rareza">${rareza.replace('_',' ')}</div>
+                </div>
+                <div class="carta-footer">
+                    <span class="cantidad-chip">x${c.cantidad}</span>
+                    <button class="btn-quitar-carta" onclick="quitarCarta(${c.cartaId})">🗑 Quitar</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Buscador ──
+    const input    = document.getElementById('inputBusqueda');
+    const dropdown = document.getElementById('dropdown');
+
+    input.addEventListener('input', () => {
+        clearTimeout(timer);
+        const q = input.value.trim();
+        if (q.length < 2) { cerrarDropdown(); return; }
+        timer = setTimeout(() => buscar(q), 350);
+    });
+    document.addEventListener('click', e => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) cerrarDropdown();
+    });
+
+    async function buscar(q) {
+        dropdown.innerHTML = '<div class="drop-msg">Buscando...</div>';
+        dropdown.classList.add('open');
+        try {
+            const res    = await fetch(`${API_CARTAS}/buscar?nombre=${encodeURIComponent(q)}`);
+            const cartas = await res.json();
+            if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados</div>'; return; }
+            dropdown.innerHTML = cartas.slice(0,10).map(c => {
+                const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
+                return `<div class="drop-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}')">
+                    <div class="drop-emoji">${emoji}</div>
+                    <div>
+                        <div class="drop-nombre">${c.nombre}</div>
+                        <div class="drop-sub">${(c.rareza||'COMUN').replace('_',' ')}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
+    }
+
+    function seleccionar(id, nombre, rareza) {
+        cartaSeleccionada = { id, nombre, rareza };
+        input.value = nombre;
+        cerrarDropdown();
+        document.getElementById('selEmoji').textContent  = RAREZA_EMOJI[rareza] || '🃏';
+        document.getElementById('selNombre').textContent = nombre;
+        document.getElementById('cartaSel').classList.add('visible');
+    }
+
+    function limpiar() {
+        cartaSeleccionada = null;
+        input.value = '';
+        document.getElementById('cartaSel').classList.remove('visible');
+    }
+    function cerrarDropdown() { dropdown.classList.remove('open'); dropdown.innerHTML = ''; }
+
+    // ── Añadir carta ──
+    async function agregarCarta() {
+        if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', false); return; }
+        const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+        try {
+            const res = await fetch(`${API}/${MAZO_ID}/cartas/${cartaSeleccionada.id}?cantidad=${cantidad}`, { method:'POST' });
+            if (res.ok) {
+                toast('Carta añadida al mazo ✓', true);
+                limpiar();
+                document.getElementById('cantidad').value = 1;
+                cargarCartas();
+            } else {
+                const e = await res.json().catch(()=>({}));
+                toast(e.mensaje || 'Error al añadir', false);
+            }
+        } catch { toast('Error de conexión', false); }
+    }
+
+    // ── Quitar carta ──
+    async function quitarCarta(cartaId) {
+        const el = document.getElementById('cc-' + cartaId);
+        if (el) { el.style.opacity='0'; el.style.transform='scale(0.9)'; el.style.transition='0.25s'; }
+        try {
+            const res = await fetch(`${API}/${MAZO_ID}/cartas/${cartaId}`, { method:'DELETE' });
+            if (res.ok) { toast('Carta eliminada del mazo', true); setTimeout(cargarCartas, 280); }
+            else toast('Error al eliminar', false);
+        } catch { toast('Error de conexión', false); }
+    }
+
+    function toast(msg, ok=true) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${ok ? 'exito' : 'error'} visible`;
+        setTimeout(() => t.classList.remove('visible'), 3000);
+    }
+    function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+    cargarCartas();
+</script>
+</body>
+</html>
