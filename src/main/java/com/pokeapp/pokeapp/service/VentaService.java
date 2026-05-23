@@ -154,11 +154,11 @@ public class VentaService {
     }
 
     @Transactional
-    public void eliminarDeDeseos(Long usuarioId, Long cartaId) {
-        if (!listaDeseosRepository.existsByUsuarioIdAndCartaId(usuarioId, cartaId))
-            throw new IllegalArgumentException("La carta no está en la lista de deseos.");
-        listaDeseosRepository.deleteByUsuarioIdAndCartaId(usuarioId, cartaId);
-    }
+public void eliminarDeDeseosPorId(Long itemId) {
+    if (!listaDeseosRepository.existsById(itemId))
+        throw new IllegalArgumentException("El item no existe en la lista de deseos.");
+    listaDeseosRepository.deleteById(itemId);
+}
 
     public List<Listadeseos> obtenerDeseosUsuario(Long usuarioId) {
         return listaDeseosRepository.findByUsuarioId(usuarioId);

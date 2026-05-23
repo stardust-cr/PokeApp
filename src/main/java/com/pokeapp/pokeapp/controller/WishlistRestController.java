@@ -36,12 +36,12 @@ public class WishlistRestController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> eliminar(@PathVariable Long itemId) {
-        try {
-            ventaService.eliminarDeDeseos(null, itemId);
-            return ResponseEntity.ok(Map.of("mensaje", "Eliminado"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+public ResponseEntity<?> eliminar(@PathVariable Long itemId) {
+    try {
+        ventaService.eliminarDeDeseosPorId(itemId);
+        return ResponseEntity.ok(Map.of("mensaje", "Eliminado"));
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
+}
 }

@@ -62,14 +62,17 @@ public class ColeccionMazoService {
         return mazoRepository.save(m);
     }
 
+    @Transactional(readOnly = true)
     public List<Mazos> obtenerMazosUsuario(Long userId) {
         return mazoRepository.findByUsuarioId(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<Mazos> obtenerMazosPublicos() {
         return mazoRepository.findByEsPublicoTrue();
     }
 
+    @Transactional(readOnly = true)
     public Mazos obtenerMazoPorId(Long mazoId) {
         return mazoRepository.findById(mazoId)
                 .orElseThrow(() -> new IllegalArgumentException("Mazo no encontrado."));
@@ -97,6 +100,7 @@ public class ColeccionMazoService {
         mazoCartaRepository.deleteById_MazoIdAndId_CartaId(mazoId, cartaId);
     }
 
+    @Transactional(readOnly = true)
     public List<Mazos_Cartas> obtenerCartasDeMazo(Long mazoId) {
         return mazoCartaRepository.findById_MazoId(mazoId);
     }

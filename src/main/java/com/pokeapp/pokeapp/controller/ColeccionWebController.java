@@ -90,7 +90,7 @@ public class ColeccionWebController {
             return "redirect:/web/login";
         }
 
-        ventaService.eliminarDeDeseos(usuario.getId(), cartaId);
+        ventaService.eliminarDeDeseosPorId(cartaId);
         return "redirect:/web/wishlist";
     }
 

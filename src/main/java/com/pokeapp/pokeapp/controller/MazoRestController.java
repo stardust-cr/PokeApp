@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mazos")
@@ -25,14 +24,14 @@ public class MazoRestController {
     @GetMapping("/usuario/{userId}")
     public ResponseEntity<List<MazoDTO.Response>> mazosDeUsuario(@PathVariable Long userId) {
         List<Mazos> mazos = service.obtenerMazosUsuario(userId);
-        return ResponseEntity.ok(mazos.stream().map(this::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(mazos.stream().map(this::toResponse).toList());
     }
 
     // ── GET /api/mazos/publicos ───────────────────────────────────────────────
     @GetMapping("/publicos")
     public ResponseEntity<List<MazoDTO.Response>> mazosPublicos() {
         List<Mazos> mazos = service.obtenerMazosPublicos();
-        return ResponseEntity.ok(mazos.stream().map(this::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(mazos.stream().map(this::toResponse).toList());
     }
 
     // ── POST /api/mazos/{userId}?nombre=...&descripcion=...&esPublico=false ──
@@ -65,14 +64,14 @@ public class MazoRestController {
     @GetMapping("/{mazoId}/cartas")
     public ResponseEntity<List<MazoDTO.CartaEnMazoResponse>> cartasDeMazo(@PathVariable Long mazoId) {
         List<Mazos_Cartas> cartas = service.obtenerCartasDeMazo(mazoId);
-        List<MazoDTO.CartaEnMazoResponse> resp = cartas.stream().map(mc ->
-            MazoDTO.CartaEnMazoResponse.builder()
-                .cartaId(mc.getCarta().getId())
-                .cartaNombre(mc.getCarta().getNombre())
-                .imagenUrl(mc.getCarta().getImagenUrl())
-                .cantidad(mc.getCantidad())
-                .build()
-        ).collect(Collectors.toList());
+        List<MazoDTO.CartaEnMazoResponse> resp = cartas.stream().map(mc -> {
+            MazoDTO.CartaEnMazoResponse item = new MazoDTO.CartaEnMazoResponse();
+            item.setCartaId(mc.getCarta().getId());
+            item.setCartaNombre(mc.getCarta().getNombre());
+            item.setImagenUrl(mc.getCarta().getImagenUrl());
+            item.setCantidad(mc.getCantidad());
+            return item;
+        }).toList();
         return ResponseEntity.ok(resp);
     }
 
@@ -122,15 +121,15 @@ public class MazoRestController {
 
     // ── Helper: Mazos → MazoDTO.Response ─────────────────────────────────────
     private MazoDTO.Response toResponse(Mazos m) {
-        return MazoDTO.Response.builder()
-            .id(m.getId())
-            .usuarioId(m.getUsuario() != null ? m.getUsuario().getId() : null)
-            .usuarioNombre(m.getUsuario() != null ? m.getUsuario().getUsername() : null)
-            .nombre(m.getNombre())
-            .descripcion(m.getDescripcion())
-            .esPublico(m.isEsPublico())
-            .fechaCreacion(m.getFechaCreacion())
-            .totalCartas(0)
-            .build();
+        MazoDTO.Response response = new MazoDTO.Response();
+        response.setId(m.getId());
+        response.setUsuarioId(m.getUsuario() != null ? m.getUsuario().getId() : null);
+        response.setUsuarioNombre(m.getUsuario() != null ? m.getUsuario().getUsername() : null);
+        response.setNombre(m.getNombre());
+        response.setDescripcion(m.getDescripcion());
+        response.setEsPublico(m.isEsPublico());
+        response.setFechaCreacion(m.getFechaCreacion());
+        response.setTotalCartas(0);
+        return response;
     }
 }
