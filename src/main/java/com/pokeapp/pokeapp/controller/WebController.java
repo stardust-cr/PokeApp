@@ -280,13 +280,5 @@ public String testHash() {
     return passwordEncoder.encode("password123");
 }
 
-@GetMapping("/mazos")
-public String mazos(HttpSession session, Model model) {
-    String username = (String) session.getAttribute("username");
-    if (username == null) return "redirect:/web/login";
-    User usuario = userRepository.findByUsername(username).orElse(null);
-    if (usuario == null) return "redirect:/web/login";
-    model.addAttribute("usuarioId", usuario.getId());
-    return "mazos";
-}
+
 }
