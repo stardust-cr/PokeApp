@@ -105,18 +105,25 @@ public class ColeccionWebController {
     }
 
     @GetMapping("/valoraciones")
-    public String valoraciones(HttpSession session, Model model) {
-        String username = (String) session.getAttribute("username");
-        if (username == null) {
-            return "redirect:/web/login";
-        }
-        User usuario = userRepository.findByUsername(username).orElse(null);
-        if (usuario == null) {
-            return "redirect:/web/login";
-        }
+public String valoraciones(HttpSession session, Model model) {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    model.addAttribute("vendedorId", usuario.getId());
+    model.addAttribute("usuarioId", usuario.getId());
+    model.addAttribute("username", username);
+    return "valoraciones";
+}
 
-        model.addAttribute("valoraciones", ventaService.obtenerValoracionesDeVendedor(usuario.getId()));
-        model.addAttribute("username", username);
-        return "valoraciones";
-    }
+    @GetMapping("/mazos")
+public String mazos(HttpSession session, Model model) {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    model.addAttribute("usuarioId", usuario.getId());
+    return "mazos";
+}
+
 }
