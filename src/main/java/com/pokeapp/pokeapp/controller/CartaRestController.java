@@ -31,10 +31,19 @@ public class CartaRestController {
 
     /** GET /api/cartas/buscar?nombre=Charizard — buscar cartas por nombre en el servidor */
     @GetMapping("/buscar")
-    public ResponseEntity<List<CartaDTO.Response>> buscarPorNombre(@RequestParam String nombre) {
-        List<CartaDTO.Response> cartas = cartaService.buscarPorNombre(nombre);
-        return ResponseEntity.ok(cartas);
+public ResponseEntity<List<CartaDTO.Response>> buscarPorNombre(@RequestParam String nombre) {
+    // Primero busca en BD local
+    List<CartaDTO.Response> locales = cartaService.buscarPorNombre(nombre);
+    if (!locales.isEmpty()) return ResponseEntity.ok(locales);
+
+    // Si no hay resultados, busca en API externa
+    try {
+        List<CartaDTO.Response> externas = cartaService.buscarCartasEnApi(nombre);
+        return ResponseEntity.ok(externas);
+    } catch (Exception e) {
+        return ResponseEntity.ok(List.of());
     }
+}
 
     /** GET /api/cartas — todas las cartas del servidor */
     @GetMapping

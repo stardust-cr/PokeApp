@@ -194,15 +194,33 @@
         } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
     }
 
-    function seleccionar(id, nombre, rareza, set) {
-        cartaSeleccionada = { id, nombre, rareza };
-        input.value = nombre;
-        cerrarDropdown();
-        document.getElementById('selEmoji').textContent  = RAREZA_EMOJI[rareza] || '🃏';
-        document.getElementById('selNombre').textContent = nombre;
-        document.getElementById('selRareza').textContent = rareza.replace('_',' ') + (set ? ' · ' + set : '');
-        document.getElementById('cartaSeleccionada').classList.add('visible');
+    async function seleccionar(id, nombre, rareza, set) {
+    let cartaId = id;
+
+    // Si no tiene id (viene de la API externa), importarla primero
+    if (!cartaId) {
+        try {
+            const res = await fetch('/api/cartas/importar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, setCodigo: set || '', rareza: rareza || 'COMUN', imagenUrl: '' })
+            });
+            const carta = await res.json();
+            cartaId = carta.id;
+        } catch {
+            toast('Error al importar la carta', false);
+            return;
+        }
     }
+
+    cartaSeleccionada = { id: cartaId, nombre, rareza };
+    input.value = nombre;
+    cerrarDropdown();
+    document.getElementById('selEmoji').textContent  = RAREZA_EMOJI[rareza] || '🃏';
+    document.getElementById('selNombre').textContent = nombre;
+    document.getElementById('selRareza').textContent = rareza.replace('_',' ') + (set ? ' · ' + set : '');
+    document.getElementById('cartaSeleccionada').classList.add('visible');
+}
 
     function limpiar() {
         cartaSeleccionada = null;

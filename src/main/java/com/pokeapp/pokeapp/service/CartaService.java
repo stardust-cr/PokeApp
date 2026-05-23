@@ -28,24 +28,38 @@ public class CartaService {
     private final String API_URL = "https://api.pokemontcg.io/v2/cards";
 
     public List<CartaDTO.Response> buscarCartasEnApi(String nombre) {
-        RestTemplate restTemplate = new RestTemplate();
-        // Filtramos por nombre en la API de TCG
-        String url = API_URL + "?q=name:" + nombre;
-        
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-        List<Map<String, Object>> data = (List<Map<String, Object>>) response.get("data");
+    RestTemplate restTemplate = new RestTemplate();
+    String url = API_URL + "?q=name:\"" + nombre + "\"&pageSize=10";
+    
+    Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+    if (response == null || response.get("data") == null) return List.of();
+    
+    List<Map<String, Object>> data = (List<Map<String, Object>>) response.get("data");
 
-        return data.stream().map(cardMap -> {
-            CartaDTO.Response dto = new CartaDTO.Response();
-            dto.setNombre((String) cardMap.get("name"));
-            
-            // Extraemos la imagen (usamos la versión 'small' para mejor rendimiento)
-            Map<String, String> images = (Map<String, String>) cardMap.get("images");
-            dto.setImagenUrl(images.get("small"));
-            
-            return dto;
-        }).collect(Collectors.toList());
-    }
+    return data.stream().map(cardMap -> {
+        CartaDTO.Response dto = new CartaDTO.Response();
+        dto.setNombre((String) cardMap.get("name"));
+        
+        Map<String, String> images = (Map<String, String>) cardMap.get("images");
+        if (images != null) dto.setImagenUrl(images.get("small"));
+        
+        // Mapear rareza
+        String rarezaTcg = (String) cardMap.get("rarity");
+        Carta.Rareza rareza = Carta.Rareza.COMUN;
+        if (rarezaTcg != null) {
+            String r = rarezaTcg.toLowerCase();
+            if (r.contains("secret") || r.contains("rainbow")) rareza = Carta.Rareza.SECRETA;
+            else if (r.contains("ultra") || r.contains("vmax") || r.contains("vstar")) rareza = Carta.Rareza.ULTRA_RARA;
+            else if (r.contains("rare")) rareza = Carta.Rareza.RARA;
+            else if (r.contains("uncommon")) rareza = Carta.Rareza.POCO_COMUN;
+        }
+        dto.setRareza(rareza);
+        dto.setSetCodigo((String) ((Map<?,?>)cardMap.getOrDefault("set", Map.of())).get("id"));
+        
+        // id = null porque aún no está en la BD, se importará al seleccionarla
+        return dto;
+    }).collect(Collectors.toList());
+}
 
     public CartaService(CartaRepository cartaRepository,
                         HistorialPrecioRepository historialPrecioRepository) {
