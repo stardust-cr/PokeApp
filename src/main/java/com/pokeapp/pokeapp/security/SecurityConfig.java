@@ -36,7 +36,7 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 
-    @Bean
+@Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
@@ -51,18 +51,6 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             ).permitAll()
             .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
-        )
-        .formLogin(form -> form
-            .loginPage("/web/login")
-            .loginProcessingUrl("/web/login")
-            .defaultSuccessUrl("/web/home", true)
-            .failureUrl("/web/login?error")
-            .permitAll()
-        )
-        .logout(logout -> logout
-            .logoutUrl("/web/logout")
-            .logoutSuccessUrl("/web/login?logout")
-            .permitAll()
         )
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
