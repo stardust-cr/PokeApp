@@ -238,22 +238,6 @@
         <label>Nombre de la colección *</label>
         <input type="text" id="crearNombre" placeholder="Ej: Cartas Raras Base Set" maxlength="100">
         
-        <label style="margin-top: 16px;">Buscar primera carta (opcional)</label>
-        <div style="position: relative; margin-bottom: 12px;">
-            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem;">🔍</span>
-            <input type="text" id="inputBuscaCol" placeholder="Escribe el nombre de la carta..." autocomplete="off" 
-                   style="width: 100%; padding: 12px 16px 12px 42px; border: 2px solid #EEE; border-radius: 12px; font-size: 0.95rem; outline: none; color: #333; transition: border-color 0.2s; background: #FAFAFA;">
-        </div>
-        <div id="dropdownCol" style="background: white; border: 2px solid #EEE; border-radius: 12px; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-bottom: 12px;"></div>
-        
-        <div id="cartaSeleccionadaCol" style="display: none; align-items: center; gap: 12px; background: #E1F5FE; border: 2px solid #7AACCF; border-radius: 12px; padding: 11px 16px; margin-bottom: 12px;">
-            <span id="selEmojiCol" style="font-size: 1.5rem;">🃏</span>
-            <div style="flex: 1;">
-                <div id="selNombreCol" style="font-weight: bold; font-size: 0.9rem; color: #0369A1;">—</div>
-                <div id="selRarezaCol" style="font-size: 0.75rem; color: #7AACCF; margin-top: 2px;">—</div>
-            </div>
-            <button onclick="limpiarCol()" style="background: none; border: none; cursor: pointer; color: #AAA; font-size: 1rem; transition: color 0.2s; padding: 4px;">✕</button>
-        </div>
         
         <div class="modal-footer">
             <button class="btn-cancelar" onclick="cerrar('overlayCrear')">Cancelar</button>
@@ -335,80 +319,6 @@ let coleccionAEliminar = null;
 const EMOJIS  = ['📚','🃏','⭐','🏆','💎','🔥','❄️','⚡','🌊','🌿'];
 const BANNERS = 5;
 
-// ── BÚSQUEDA DE CARTAS ──
-const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
-let cartaSeleccionadaCol = null;
-let timerCol = null;
-
-const inputCol = document.getElementById('inputBuscaCol');
-const dropdownCol = document.getElementById('dropdownCol');
-
-if (inputCol) {
-    inputCol.addEventListener('input', () => {
-        clearTimeout(timerCol);
-        const q = inputCol.value.trim();
-        if (q.length < 2) { cerrarDropdownCol(); return; }
-        timerCol = setTimeout(() => buscarCol(q), 350);
-    });
-
-    document.addEventListener('click', e => {
-        if (!inputCol.contains(e.target) && !dropdownCol.contains(e.target)) cerrarDropdownCol();
-    });
-}
-
-async function buscarCol(q) {
-    dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA; font-size: 0.85rem;">Buscando...</div>';
-    dropdownCol.style.display = 'block';
-    try {
-        const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=10`);
-        const data = await res.json();
-        const cartas = data.data || [];
-        if (!cartas.length) { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Sin resultados</div>'; return; }
-        dropdownCol.innerHTML = cartas.slice(0, 10).map(c => {
-            const rareza = c.rarity || 'COMUN';
-            const img = c.images?.small || '';
-            return `<div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer; border-bottom: 2px solid #F8F8F8; transition: background 0.15s;" onmouseover="this.style.background='#F0F8FF'" onmouseout="this.style.background='white'" onclick="seleccionarCol(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(img)}')">
-                ${img
-                    ? `<img src="${img}" alt="${esc(c.name)}" style="width:36px;height:50px;object-fit:contain;border-radius:5px;flex-shrink:0;" loading="lazy">`
-                    : `<div style="font-size:1.3rem;width:36px;text-align:center;flex-shrink:0;">🃏</div>`}
-                <div>
-                    <div style="font-weight: bold; font-size: 0.88rem; color: #333;">${c.name}</div>
-                    <div style="font-size: 0.75rem; color: #AAA; margin-top: 1px;">${rareza} · ${c.set?.name||''}</div>
-                </div>
-            </div>`;
-        }).join('');
-    } catch { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Error al buscar</div>'; }
-}
-
-async function seleccionarCol(id, nombre, rareza, set, imagenUrl) {
-    let cartaId = id;
-    if (!cartaId) {
-        try {
-            const res = await fetch('/api/cartas/importar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, setCodigo: set || '', rareza: rareza || 'COMUN', imagenUrl: imagenUrl || '' })
-            });
-            const carta = await res.json();
-            cartaId = carta.id;
-        } catch { toast('Error al importar la carta', false); return; }
-    }
-    cartaSeleccionadaCol = { id: cartaId, nombre, rareza };
-    inputCol.value = nombre;
-    cerrarDropdownCol();
-    document.getElementById('selEmojiCol').textContent = RAREZA_EMOJI[rareza] || '🃏';
-    document.getElementById('selNombreCol').textContent = nombre;
-    document.getElementById('selRarezaCol').textContent = rareza.replace('_',' ') + (set ? ' · ' + set : '');
-    document.getElementById('cartaSeleccionadaCol').style.display = 'flex';
-}
-
-function limpiarCol() {
-    cartaSeleccionadaCol = null;
-    inputCol.value = '';
-    document.getElementById('cartaSeleccionadaCol').style.display = 'none';
-}
-
-function cerrarDropdownCol() { dropdownCol.style.display = 'none'; dropdownCol.innerHTML = ''; }
 
 async function cargarColecciones() {
     const userId = document.getElementById('userId').value;
@@ -568,7 +478,6 @@ async function confirmarAñadirCarta() {
 
 function abrirModalCrear() {
     document.getElementById('crearNombre').value = '';
-    limpiarCol();
     document.getElementById('overlayCrear').classList.add('open');
     setTimeout(() => document.getElementById('crearNombre').focus(), 100);
 }
