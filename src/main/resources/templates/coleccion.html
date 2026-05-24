@@ -312,24 +312,38 @@ async function buscarCol(q) {
     dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA; font-size: 0.85rem;">Buscando...</div>';
     dropdownCol.style.display = 'block';
     try {
-        const res = await fetch(`/api/cartas/buscar?nombre=${encodeURIComponent(q)}`);
-        const cartas = await res.json();
+        const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=10`);
+        const data = await res.json();
+        const cartas = data.data || [];
         if (!cartas.length) { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Sin resultados</div>'; return; }
         dropdownCol.innerHTML = cartas.slice(0, 10).map(c => {
-            const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
-            return `<div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer; border-bottom: 2px solid #F8F8F8; transition: background 0.15s;" onmouseover="this.style.background='#F0F8FF'" onmouseout="this.style.background='white'" onclick="seleccionarCol(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}','${esc(c.set||'')}')">
+            const rareza = c.rarity || 'COMUN';
+            const emoji = RAREZA_EMOJI[rareza] || '🃏';
+            return `<div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer; border-bottom: 2px solid #F8F8F8; transition: background 0.15s;" onmouseover="this.style.background='#F0F8FF'" onmouseout="this.style.background='white'" onclick="seleccionarCol(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}')">
                 <div style="font-size: 1.3rem; width: 32px; text-align: center; flex-shrink: 0;">${emoji}</div>
                 <div>
-                    <div style="font-weight: bold; font-size: 0.88rem; color: #333;">${c.nombre}</div>
-                    <div style="font-size: 0.75rem; color: #AAA; margin-top: 1px;">${(c.rareza||'COMUN').replace('_',' ')}${c.set?' · '+c.set:''}</div>
+                    <div style="font-weight: bold; font-size: 0.88rem; color: #333;">${c.name}</div>
+                    <div style="font-size: 0.75rem; color: #AAA; margin-top: 1px;">${rareza} · ${c.set?.name||''}</div>
                 </div>
             </div>`;
         }).join('');
     } catch { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Error al buscar</div>'; }
 }
 
-function seleccionarCol(id, nombre, rareza, set) {
-    cartaSeleccionadaCol = { id, nombre, rareza };
+async function seleccionarCol(id, nombre, rareza, set) {
+    let cartaId = id;
+    if (!cartaId) {
+        try {
+            const res = await fetch('/api/cartas/importar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, setCodigo: set || '', rareza: rareza || 'COMUN', imagenUrl: '' })
+            });
+            const carta = await res.json();
+            cartaId = carta.id;
+        } catch { toast('Error al importar la carta', false); return; }
+    }
+    cartaSeleccionadaCol = { id: cartaId, nombre, rareza };
     inputCol.value = nombre;
     cerrarDropdownCol();
     document.getElementById('selEmojiCol').textContent = RAREZA_EMOJI[rareza] || '🃏';

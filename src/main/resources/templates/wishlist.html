@@ -174,44 +174,26 @@
         if (!input.contains(e.target) && !dropdown.contains(e.target)) cerrarDropdown();
     });
 
-    async function buscar(q) {
-        dropdown.innerHTML = '<div class="drop-msg">Buscando...</div>';
-        dropdown.classList.add('open');
-        try {
-            const res    = await fetch(`${API_CARTAS}/buscar?nombre=${encodeURIComponent(q)}`);
-            const cartas = await res.json();
-            if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados para "' + q + '"</div>'; return; }
-            dropdown.innerHTML = cartas.slice(0, 10).map(c => {
-                const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
-                return `<div class="drop-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}','${esc(c.set||'')}')">
-                    <div class="drop-emoji">${emoji}</div>
-                    <div>
-                        <div class="drop-nombre">${c.nombre}</div>
-                        <div class="drop-sub">${(c.rareza||'COMUN').replace('_',' ')}${c.set?' · '+c.set:''}</div>
-                    </div>
-                </div>`;
-            }).join('');
-        } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
-    }
-
-    async function seleccionar(id, nombre, rareza, set) {
-    let cartaId = id;
-
-    // Si no tiene id (viene de la API externa), importarla primero
-    if (!cartaId) {
-        try {
-            const res = await fetch('/api/cartas/importar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, setCodigo: set || '', rareza: rareza || 'COMUN', imagenUrl: '' })
-            });
-            const carta = await res.json();
-            cartaId = carta.id;
-        } catch {
-            toast('Error al importar la carta', false);
-            return;
-        }
-    }
+   async function buscar(q) {
+    dropdown.innerHTML = '<div class="drop-msg">Buscando...</div>';
+    dropdown.classList.add('open');
+    try {
+        const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=10`);
+        const data = await res.json();
+        const cartas = data.data || [];
+        if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados para "' + q + '"</div>'; return; }
+        dropdown.innerHTML = cartas.slice(0, 10).map(c => {
+            const rareza = c.rarity || 'COMUN';
+            return `<div class="drop-item" onclick="seleccionar(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}')">
+                <div class="drop-emoji">🃏</div>
+                <div>
+                    <div class="drop-nombre">${c.name}</div>
+                    <div class="drop-sub">${rareza} · ${c.set?.name||''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
+}
 
     cartaSeleccionada = { id: cartaId, nombre, rareza };
     input.value = nombre;
