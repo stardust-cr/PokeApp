@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
@@ -36,29 +37,34 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 
-@Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/web/login", "/web/register", "/web/", "/web/signup",
-                "/api/auth/**", "/web/verificar-email",
-                "/web/reenviar-codigo", "/web/check-email",
-                "/web/logout", "/css/**", "/js/**",
-                "/images/**", "/webjars/**", "/favicon.ico", "/test-hash",
-                "/error"                          // ← AÑADIDO
-            ).permitAll()
-            .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
-            .anyRequest().authenticated()
-        )
-        .exceptionHandling(ex -> ex            // ← AÑADIDO
-            .authenticationEntryPoint((req, res, e) ->
-                res.sendRedirect("/web/login"))
-        )
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .authorizeHttpRequests(auth -> auth
 
-    return http.build();
-}
+                // ── Rutas públicas (sin autenticación) ──────────────────────
+                .requestMatchers(
+                    "/web/login", "/web/register", "/web/",
+                    "/api/auth/**",
+                    "/web/verificar-email", "/web/reenviar-codigo", "/web/check-email",
+                    "/web/logout",
+                    "/css/**", "/js/**", "/images/**", "/webjars/**",
+                    "/favicon.ico", "/test-hash", "/error"
+                ).permitAll()
+
+                // ── Rutas de administrador ───────────────────────────────────
+                .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
+
+                // ── Todo lo demás: solo necesita que la sesión tenga "username"
+                //    El WebController lo comprueba él mismo, así que aquí
+                //    dejamos pasar todo para que la app gestione el acceso.
+                .anyRequest().permitAll()
+            )
+            // El JwtFilter solo se aplica a las rutas /api/** (no a /web/**)
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

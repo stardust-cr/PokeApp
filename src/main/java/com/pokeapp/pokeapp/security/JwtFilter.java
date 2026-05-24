@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
-import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -24,25 +23,16 @@ public class JwtFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    private static final List<String> RUTAS_PUBLICAS = List.of(
-        "/web/login", "/web/register", "/web/",
-        "/web/verificar-email", "/web/reenviar-codigo",
-        "/web/check-email", "/api/auth/login", "/api/auth/register"
-    );
-
+    /**
+     * El JwtFilter SOLO actúa sobre rutas /api/**.
+     * Las rutas /web/** usan sesión HTTP gestionada por el WebController.
+     */
     @Override
-protected boolean shouldNotFilter(HttpServletRequest request) {
-    String path = request.getServletPath();
-    // Rutas públicas exactas
-    if (RUTAS_PUBLICAS.stream().anyMatch(path::equals)) return true;
-    // Rutas de sesión (no JWT)
-    if (path.startsWith("/web/perfil")) return true;
-    // Recursos estáticos
-    if (path.startsWith("/css/") || path.startsWith("/js/") 
-        || path.startsWith("/images/") || path.startsWith("/webjars/")
-        || path.equals("/favicon.ico") || path.equals("/error")) return true;
-    return false;
-}
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // Dejar pasar TODO excepto las rutas de API que necesitan JWT
+        return !path.startsWith("/api/");
+    }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
