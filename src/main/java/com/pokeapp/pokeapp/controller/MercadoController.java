@@ -87,8 +87,8 @@ public class MercadoController {
     }
 
     @DeleteMapping("/deseos")
-    public ResponseEntity<Void> eliminarDeDeseos(@RequestParam Long usuarioId, @RequestParam Long cartaId) {
-        ventaService.eliminarDeDeseosPorId(cartaId);
+    public ResponseEntity<Void> eliminarDeDeseos(@RequestParam Long usuarioId, @RequestParam Long itemId) {
+        ventaService.eliminarDeDeseosPorId(itemId);
         return ResponseEntity.noContent().build();
     }
 

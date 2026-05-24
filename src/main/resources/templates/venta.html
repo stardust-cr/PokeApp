@@ -16,54 +16,103 @@
         .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
         .back-btn { color:white; text-decoration:none; font-weight:bold; background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px; font-size:0.9rem; }
         .back-btn:hover { background:rgba(255,255,255,0.35); }
+
         .container { max-width:600px; margin:36px auto; padding:0 20px; }
         .form-card { background:white; border-radius:28px; border:4px solid #FFB3B3; box-shadow:0 10px 0 #FFD1D1; padding:36px; animation:fadeInUp 0.4s ease-out; }
         @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-        .form-title { font-size:1.4rem; font-weight:bold; color:#333; margin-bottom:6px; }
+        .form-title    { font-size:1.4rem; font-weight:bold; color:#333; margin-bottom:6px; }
         .form-subtitle { color:#AAA; font-size:0.88rem; margin-bottom:28px; }
+
         .form-group { margin-bottom:20px; }
         .form-group label { display:block; font-size:0.85rem; color:#888; font-weight:bold; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
-        .form-group input, .form-group select, .form-group textarea { width:100%; padding:13px 16px; border:2px solid #EEE; border-radius:14px; font-size:0.95rem; color:#333; outline:none; transition:border-color 0.2s; background:#FAFAFA; font-family:inherit; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#FF8A8A; background:white; box-shadow:0 0 0 4px rgba(255,138,138,0.12); }
+        .form-group input, .form-group textarea {
+            width:100%; padding:13px 16px; border:2px solid #EEE; border-radius:14px;
+            font-size:0.95rem; color:#333; outline:none; transition:border-color 0.2s;
+            background:#FAFAFA; font-family:inherit;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            border-color:#FF8A8A; background:white; box-shadow:0 0 0 4px rgba(255,138,138,0.12);
+        }
         .form-group textarea { height:90px; resize:none; }
+
+        /* ── Buscador ── */
         .search-wrap { position:relative; }
-        .search-results { position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:100; background:white; border:2px solid #EEE; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.1); max-height:260px; overflow-y:auto; display:none; }
-        .search-item { display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer; border-bottom:1px solid #F5F5F5; transition:background 0.15s; }
-        .search-item:last-child { border-bottom:none; }
-        .search-item:hover { background:#FFF0F0; }
-        .search-item img { width:40px; height:40px; object-fit:contain; border-radius:6px; background:#FAFAFA; flex-shrink:0; }
-        .search-item-emoji { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
-        .search-item-info { flex:1; min-width:0; }
-        .search-item-name { font-weight:bold; font-size:0.9rem; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .search-item-meta { font-size:0.75rem; color:#AAA; margin-top:2px; }
-        .search-empty { padding:16px; text-align:center; color:#AAA; font-size:0.88rem; }
-        .carta-preview { border-radius:18px; overflow:hidden; border:3px solid #FDE68A; margin-bottom:20px; display:none; }
-        .carta-preview img { width:100%; max-height:220px; object-fit:contain; display:block; background:#fafafa; }
-        .carta-preview-emoji { font-size:3rem; text-align:center; padding:24px; background:linear-gradient(135deg,#FFF9C4,#FDE68A); display:block; }
-        .carta-preview-info { padding:12px 16px; text-align:center; background:linear-gradient(135deg,#FFF9C4,#FDE68A); }
-        .carta-preview-info .nombre { font-weight:bold; font-size:1rem; color:#333; }
-        .carta-preview-info .rareza { font-size:0.8rem; color:#888; margin-top:3px; }
+        .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:1rem; }
+        .search-wrap input { padding-left:42px; }
+        .dropdown {
+            position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:200;
+            background:white; border:2px solid #EEE; border-radius:14px;
+            box-shadow:0 8px 24px rgba(0,0,0,0.1); max-height:280px; overflow-y:auto;
+            display:none;
+        }
+        .dropdown.open { display:block; }
+        .drop-item { display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer; border-bottom:1px solid #F5F5F5; transition:background 0.15s; }
+        .drop-item:last-child { border-bottom:none; }
+        .drop-item:hover { background:#FFF0F0; }
+        .drop-img  { width:40px; height:56px; object-fit:contain; border-radius:6px; background:#FAFAFA; flex-shrink:0; }
+        .drop-emoji{ font-size:1.3rem; width:40px; text-align:center; flex-shrink:0; }
+        .drop-nombre { font-weight:bold; font-size:0.88rem; color:#333; }
+        .drop-sub    { font-size:0.75rem; color:#AAA; margin-top:1px; }
+        .drop-msg    { padding:14px; text-align:center; color:#AAA; font-size:0.85rem; }
+
+        /* ── Carta seleccionada ── */
+        .carta-sel {
+            display:none; align-items:center; gap:14px;
+            background:#FFF5F5; border:2px solid #FFB3B3; border-radius:14px;
+            padding:12px 16px; margin-bottom:6px;
+        }
+        .carta-sel.visible { display:flex; }
+        .carta-sel img  { width:52px; height:72px; object-fit:contain; border-radius:8px; background:#fff; flex-shrink:0; }
+        .carta-sel-emoji{ font-size:2rem; flex-shrink:0; }
+        .carta-sel-info { flex:1; }
+        .carta-sel-nombre { font-weight:bold; font-size:0.95rem; color:#C62828; }
+        .carta-sel-meta   { font-size:0.78rem; color:#999; margin-top:3px; }
+        .btn-quitar { background:none; border:none; cursor:pointer; color:#CCC; font-size:1rem; padding:4px; transition:color 0.2s; }
+        .btn-quitar:hover { color:#E63946; }
+
+        /* ── Tipo toggle ── */
         .tipo-toggle { display:flex; gap:10px; }
         .tipo-btn { flex:1; padding:13px; border-radius:14px; border:2px solid #EEE; cursor:pointer; font-weight:bold; font-size:0.9rem; text-align:center; background:white; color:#888; transition:all 0.2s; }
         .tipo-btn.activo.venta   { background:#E3F2FD; color:#1E88E5; border-color:#B3D4F5; }
         .tipo-btn.activo.trueque { background:#F3E5F5; color:#8E24AA; border-color:#CE93D8; }
         #grupoPrecio { transition:opacity 0.3s; }
         #grupoPrecio.oculto { opacity:0.3; pointer-events:none; }
+
+        /* ── Alerts ── */
         .alert { border-radius:12px; padding:12px 16px; font-size:0.88rem; margin-bottom:16px; }
         .alert-danger  { background:rgba(255,107,107,0.15); color:#C62828; border-left:4px solid #F87171; }
         .alert-success { background:rgba(78,205,196,0.15); color:#0E7490; border-left:4px solid #4ECDC4; }
+
+        /* ── Footer ── */
         .form-footer { display:flex; gap:12px; margin-top:10px; }
-        .btn-publicar { flex:1; padding:15px; background:#FF8A8A; color:white; border:none; border-radius:16px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 6px 0 #E57373; transition:all 0.2s; }
-        .btn-publicar:hover  { transform:translateY(2px); box-shadow:0 3px 0 #E57373; }
-        .btn-publicar:active { transform:translateY(5px); box-shadow:0 1px 0 #E57373; }
-        .btn-publicar:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
-        .btn-cancelar { padding:15px 22px; background:#F0F0F0; color:#666; border:none; border-radius:16px; font-size:0.95rem; font-weight:bold; cursor:pointer; text-decoration:none; display:flex; align-items:center; }
+        .btn-publicar {
+            flex:1; padding:15px; background:#FF8A8A; color:white; border:none;
+            border-radius:16px; font-size:1rem; font-weight:bold; cursor:pointer;
+            box-shadow:0 6px 0 #E57373; transition:all 0.2s;
+        }
+        .btn-publicar:hover   { transform:translateY(2px); box-shadow:0 3px 0 #E57373; }
+        .btn-publicar:active  { transform:translateY(5px); box-shadow:0 1px 0 #E57373; }
+        .btn-publicar:disabled{ opacity:0.45; cursor:not-allowed; transform:none; box-shadow:0 6px 0 #E57373; }
+        .btn-cancelar {
+            padding:15px 22px; background:#F0F0F0; color:#666; border:none;
+            border-radius:16px; font-size:0.95rem; font-weight:bold; cursor:pointer;
+            text-decoration:none; display:flex; align-items:center;
+        }
         .btn-cancelar:hover { background:#E0E0E0; }
-        .sin-cartas { text-align:center; padding:24px; background:#FFF0F0; border-radius:14px; border:2px dashed #FFB3B3; color:#E63946; font-size:0.9rem; }
-        .sin-cartas a { color:#E63946; font-weight:bold; }
+
+        /* ── Spinner en botón ── */
+        .spinner { display:inline-block; width:16px; height:16px; border:3px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* ── Toast ── */
+        .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 28px; color:white; font-weight:bold; border-radius:50px; display:none; z-index:9999; font-size:0.9rem; }
+        .toast.visible { display:block; }
+        .toast.exito { background:#81C784; }
+        .toast.error { background:#E57373; }
     </style>
 </head>
 <body>
+
 <nav class="topbar">
     <a th:href="@{/web/mercado}" class="topbar-logo">
         <div class="pokeball"><div class="pokeball-linea"></div><div class="btn-center"></div></div>
@@ -75,149 +124,249 @@
 <div class="container">
     <div class="form-card">
         <div class="form-title">📦 Poner carta en venta</div>
-        <div class="form-subtitle">Solo puedes vender cartas de tu colección</div>
+        <div class="form-subtitle">Busca cualquier carta del catálogo y publícala en el mercado</div>
 
         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
         <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
 
-        <!-- Sin cartas en colección -->
-        <div th:if="${#lists.isEmpty(misCartas)}" class="sin-cartas">
-            😔 No tienes cartas en ninguna colección todavía.<br><br>
-            <a th:href="@{/web/coleccion}">Añade cartas a tu colección</a> primero para poder venderlas.
+        <!-- Campos ocultos que se rellenan por JS antes de enviar -->
+        <input type="hidden" id="vendedorId"   th:value="${usuarioId}"/>
+        <input type="hidden" id="cartaIdInput"/>
+        <input type="hidden" id="tipoInput"    value="VENTA"/>
+
+        <!-- BUSCADOR API TCG -->
+        <div class="form-group">
+            <label>🔍 Buscar carta</label>
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="inputBusqueda" autocomplete="off"
+                       placeholder="Escribe el nombre de la carta..."/>
+                <div class="dropdown" id="dropdown"></div>
+            </div>
         </div>
 
-        <form th:action="@{/web/venta/crear}" method="post" id="formVenta" th:unless="${#lists.isEmpty(misCartas)}">
-            <input type="hidden" name="vendedorId" th:value="${usuarioId}"/>
-            <input type="hidden" name="cartaId"    id="cartaIdInput"/>
-
-            <!-- BUSCADOR LOCAL (filtra misCartas) -->
-            <div class="form-group">
-                <label>Buscar carta de tu colección</label>
-                <div class="search-wrap">
-                    <input type="text" id="buscadorCarta" autocomplete="off"
-                           placeholder="Escribe el nombre..."/>
-                    <div class="search-results" id="searchResults"></div>
-                </div>
+        <!-- CARTA SELECCIONADA -->
+        <div class="carta-sel" id="cartaSel">
+            <span class="carta-sel-emoji" id="selEmoji">🃏</span>
+            <div class="carta-sel-info">
+                <div class="carta-sel-nombre" id="selNombre">—</div>
+                <div class="carta-sel-meta"   id="selMeta">—</div>
             </div>
+            <button class="btn-quitar" onclick="limpiar()" title="Quitar selección">✕</button>
+        </div>
 
-            <!-- PREVIEW -->
-            <div class="carta-preview" id="cartaPreview">
-                <img id="previewImg" src="" alt="" style="display:none;"/>
-                <span id="previewEmoji" class="carta-preview-emoji" style="display:none;"></span>
-                <div class="carta-preview-info">
-                    <div class="nombre" id="previewNombre"></div>
-                    <div class="rareza" id="previewRareza"></div>
-                </div>
+        <!-- TIPO -->
+        <div class="form-group">
+            <label>Tipo de anuncio</label>
+            <div class="tipo-toggle">
+                <div class="tipo-btn activo venta"  onclick="setTipo('VENTA')">🛒 Venta</div>
+                <div class="tipo-btn trueque"        onclick="setTipo('TRUEQUE')">🔄 Trueque</div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label>Tipo de anuncio</label>
-                <div class="tipo-toggle">
-                    <div class="tipo-btn activo venta"  onclick="setTipo('VENTA')">🛒 Venta</div>
-                    <div class="tipo-btn trueque"        onclick="setTipo('TRUEQUE')">🔄 Trueque</div>
-                </div>
-                <input type="hidden" name="tipo" id="tipoInput" value="VENTA">
-            </div>
+        <!-- PRECIO -->
+        <div class="form-group" id="grupoPrecio">
+            <label>Precio (€)</label>
+            <input type="number" id="precioInput" placeholder="Ej: 4.99" min="0" step="0.01"/>
+        </div>
 
-            <div class="form-group" id="grupoPrecio">
-                <label>Precio (€)</label>
-                <input type="number" name="precio" id="precioInput" placeholder="Ej: 4.99" min="0" step="0.01">
-            </div>
+        <!-- DESCRIPCIÓN -->
+        <div class="form-group">
+            <label>Descripción <span style="color:#CCC;font-weight:normal;font-size:0.8rem">(opcional)</span></label>
+            <textarea id="descripcionInput" placeholder="Estado de la carta, condición, extras..."></textarea>
+        </div>
 
-            <div class="form-group">
-                <label>Descripción <span style="color:#CCC;font-weight:normal;font-size:0.8rem">(opcional)</span></label>
-                <textarea name="descripcion" placeholder="Estado de la carta, condición, extras..."></textarea>
-            </div>
-
-            <div class="form-footer">
-                <a th:href="@{/web/mercado}" class="btn-cancelar">Cancelar</a>
-                <button type="submit" class="btn-publicar" id="btnPublicar" disabled>🚀 Publicar anuncio</button>
-            </div>
-        </form>
+        <!-- FOOTER -->
+        <div class="form-footer">
+            <a th:href="@{/web/mercado}" class="btn-cancelar">Cancelar</a>
+            <button class="btn-publicar" id="btnPublicar" disabled onclick="publicar()">
+                🚀 Publicar anuncio
+            </button>
+        </div>
     </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script th:inline="javascript">
+    const USUARIO_ID   = /*[[${usuarioId}]]*/ null;
     const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
 
-    // Cartas del usuario inyectadas desde Thymeleaf
-    const MIS_CARTAS = /*[[${misCartas}]]*/ [];
+    let cartaSeleccionada = null; // { nombre, rareza, setCodigo, imagenUrl }
+    let timerBusqueda = null;
 
-    const buscador = document.getElementById('buscadorCarta');
-    if (buscador) {
-        buscador.addEventListener('input', function () {
-            const q = this.value.trim().toLowerCase();
-            if (!q) { cerrarResultados(); return; }
-            const filtradas = MIS_CARTAS.filter(c => c.nombre.toLowerCase().includes(q));
-            mostrarResultados(filtradas);
-        });
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.search-wrap')) cerrarResultados();
-        });
-    }
+    /* ── BUSCADOR ── */
+    const inputEl    = document.getElementById('inputBusqueda');
+    const dropdownEl = document.getElementById('dropdown');
 
-    function mostrarResultados(cartas) {
-        const box = document.getElementById('searchResults');
-        if (!cartas.length) {
-            box.innerHTML = '<div class="search-empty">Sin resultados en tu colección</div>';
-            box.style.display = 'block';
-            return;
+    inputEl.addEventListener('input', () => {
+        clearTimeout(timerBusqueda);
+        const q = inputEl.value.trim();
+        if (q.length < 2) { cerrarDropdown(); return; }
+        timerBusqueda = setTimeout(() => buscar(q), 350);
+    });
+
+    document.addEventListener('click', e => {
+        if (!inputEl.contains(e.target) && !dropdownEl.contains(e.target)) cerrarDropdown();
+    });
+
+    async function buscar(q) {
+        dropdownEl.innerHTML = '<div class="drop-msg">Buscando...</div>';
+        dropdownEl.classList.add('open');
+        try {
+            const res  = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=12`);
+            const data = await res.json();
+            const cartas = data.data || [];
+            if (!cartas.length) {
+                dropdownEl.innerHTML = `<div class="drop-msg">Sin resultados para "${esc(q)}"</div>`;
+                return;
+            }
+            dropdownEl.innerHTML = cartas.map(c => {
+                const rareza = c.rarity || 'COMUN';
+                const img    = c.images?.small || '';
+                return `<div class="drop-item"
+                    onclick="seleccionar('${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(img)}','${esc(c.set?.name||'')}')">
+                    ${img
+                        ? `<img class="drop-img" src="${img}" alt="${esc(c.name)}" loading="lazy">`
+                        : `<div class="drop-emoji">🃏</div>`}
+                    <div>
+                        <div class="drop-nombre">${c.name}</div>
+                        <div class="drop-sub">${rareza} · ${c.set?.name || ''}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch {
+            dropdownEl.innerHTML = '<div class="drop-msg">Error al buscar. Inténtalo de nuevo.</div>';
         }
-        box.innerHTML = cartas.map(c => {
-            const rareza = c.rareza || 'COMUN';
-            const thumb  = c.imagenUrl
-                ? `<img src="${c.imagenUrl}" alt="${esc(c.nombre)}">`
-                : `<div class="search-item-emoji">${RAREZA_EMOJI[rareza] || '🃏'}</div>`;
-            return `<div class="search-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${rareza}','${esc(c.imagenUrl||'')}','${esc(c.setCodigo||'')}')">
-                ${thumb}
-                <div class="search-item-info">
-                    <div class="search-item-name">${esc(c.nombre)}</div>
-                    <div class="search-item-meta">${c.setCodigo||''} · ${rareza.replace('_',' ')}</div>
-                </div>
-            </div>`;
-        }).join('');
-        box.style.display = 'block';
     }
 
-    function seleccionar(id, nombre, rareza, imagenUrl, setCodigo) {
-        document.getElementById('cartaIdInput').value = id;
-        document.getElementById('buscadorCarta').value = nombre;
-        cerrarResultados();
-        const img   = document.getElementById('previewImg');
-        const emoji = document.getElementById('previewEmoji');
-        if (imagenUrl && imagenUrl !== 'null') {
-            img.src = imagenUrl; img.alt = nombre;
-            img.style.display   = 'block';
-            emoji.style.display = 'none';
+    function cerrarDropdown() {
+        dropdownEl.classList.remove('open');
+        dropdownEl.innerHTML = '';
+    }
+
+    function seleccionar(nombre, rareza, setCodigo, imagenUrl, setNombre) {
+        cartaSeleccionada = { nombre, rareza, setCodigo, imagenUrl };
+        inputEl.value = nombre;
+        cerrarDropdown();
+
+        // Actualizar preview de carta seleccionada
+        const emojiEl = document.getElementById('selEmoji');
+        if (imagenUrl) {
+            // Reemplazar span por img si hace falta
+            if (emojiEl.tagName === 'SPAN') {
+                emojiEl.outerHTML = `<img id="selEmoji" class="carta-sel-img" src="${imagenUrl}"
+                    alt="${esc(nombre)}" style="width:52px;height:72px;object-fit:contain;border-radius:8px;background:#fff;flex-shrink:0;">`;
+            } else {
+                document.getElementById('selEmoji').src = imagenUrl;
+            }
         } else {
-            img.style.display   = 'none';
-            emoji.textContent   = RAREZA_EMOJI[rareza] || '🃏';
-            emoji.style.display = 'block';
+            if (emojiEl.tagName === 'IMG') {
+                emojiEl.outerHTML = `<span class="carta-sel-emoji" id="selEmoji">${RAREZA_EMOJI[rareza] || '🃏'}</span>`;
+            } else {
+                emojiEl.textContent = RAREZA_EMOJI[rareza] || '🃏';
+            }
         }
-        document.getElementById('previewNombre').textContent = nombre;
-        document.getElementById('previewRareza').textContent = rareza.replace('_',' ') + (setCodigo ? ' · ' + setCodigo : '');
-        document.getElementById('cartaPreview').style.display = 'block';
+        document.getElementById('selNombre').textContent = nombre;
+        document.getElementById('selMeta').textContent =
+            rareza.replace(/_/g, ' ') + (setNombre ? ' · ' + setNombre : '');
+        document.getElementById('cartaSel').classList.add('visible');
         document.getElementById('btnPublicar').disabled = false;
     }
 
-    function cerrarResultados() { document.getElementById('searchResults').style.display = 'none'; }
+    function limpiar() {
+        cartaSeleccionada = null;
+        inputEl.value = '';
+        document.getElementById('cartaIdInput').value = '';
+        // Restaurar emoji span
+        const emojiEl = document.getElementById('selEmoji');
+        if (emojiEl && emojiEl.tagName === 'IMG') {
+            emojiEl.outerHTML = `<span class="carta-sel-emoji" id="selEmoji">🃏</span>`;
+        } else if (emojiEl) {
+            emojiEl.textContent = '🃏';
+        }
+        document.getElementById('selNombre').textContent = '—';
+        document.getElementById('selMeta').textContent   = '—';
+        document.getElementById('cartaSel').classList.remove('visible');
+        document.getElementById('btnPublicar').disabled = true;
+    }
 
-    function esc(str) { return String(str||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
+    /* ── TIPO ── */
     function setTipo(tipo) {
         document.getElementById('tipoInput').value = tipo;
         document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('activo'));
-        document.querySelector('.tipo-btn.' + (tipo==='VENTA' ? 'venta' : 'trueque')).classList.add('activo');
+        document.querySelector('.tipo-btn.' + (tipo === 'VENTA' ? 'venta' : 'trueque')).classList.add('activo');
         document.getElementById('grupoPrecio').classList.toggle('oculto', tipo === 'TRUEQUE');
         if (tipo === 'TRUEQUE') document.getElementById('precioInput').value = '';
     }
 
-    document.getElementById('formVenta')?.addEventListener('submit', function(e) {
-        if (!document.getElementById('cartaIdInput').value) {
-            e.preventDefault();
-            alert('Selecciona una carta primero.');
+    /* ── PUBLICAR ── */
+    async function publicar() {
+        if (!cartaSeleccionada) { toast('Busca y selecciona una carta primero', false); return; }
+        if (!USUARIO_ID)        { toast('Sesión expirada. Vuelve a iniciar sesión.', false); return; }
+
+        const tipo   = document.getElementById('tipoInput').value;
+        const precio = document.getElementById('precioInput').value.trim();
+
+        if (tipo === 'VENTA' && !precio) {
+            toast('Introduce un precio para la venta', false); return;
         }
-    });
+
+        // Deshabilitar botón y mostrar spinner
+        const btn = document.getElementById('btnPublicar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Publicando...';
+
+        try {
+            // 1. Importar / obtener carta en BD local
+            const importRes = await fetch('/api/cartas/importar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre:    cartaSeleccionada.nombre,
+                    setCodigo: cartaSeleccionada.setCodigo || '',
+                    rareza:    cartaSeleccionada.rareza    || 'COMUN',
+                    imagenUrl: cartaSeleccionada.imagenUrl || ''
+                })
+            });
+            if (!importRes.ok) throw new Error('No se pudo registrar la carta');
+            const carta = await importRes.json();
+
+            // 2. Publicar la venta
+            const body = {
+                cartaId: carta.id,
+                tipo:    tipo,
+                precio:  precio ? parseFloat(precio) : null
+            };
+            const ventaRes = await fetch(`/api/mercado/publicar?vendedorId=${USUARIO_ID}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (ventaRes.ok) {
+                toast('¡Anuncio publicado! Redirigiendo...', true);
+                setTimeout(() => { window.location.href = '/web/mercado'; }, 1500);
+            } else {
+                const err = await ventaRes.json().catch(() => ({}));
+                throw new Error(err?.mensaje || err?.message || 'Error al publicar');
+            }
+        } catch(e) {
+            toast('Error: ' + e.message, false);
+            btn.disabled = false;
+            btn.innerHTML = '🚀 Publicar anuncio';
+        }
+    }
+
+    /* ── TOAST ── */
+    function toast(msg, ok = true) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${ok ? 'exito' : 'error'} visible`;
+        setTimeout(() => t.classList.remove('visible'), 3500);
+    }
+
+    function esc(s) { return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 </script>
 </body>
 </html>

@@ -188,7 +188,7 @@
             dropdown.innerHTML = cartas.slice(0, 10).map(c => {
                 const rareza = c.rarity || 'COMUN';
                 const img = c.images?.small || '';
-                return `<div class="drop-item" onclick="seleccionar(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(img)}')">
+                return `<div class="drop-item" onclick="seleccionar(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(img)}','${esc(c.id||'')}')">
                     ${img
                         ? `<img class="drop-img" src="${img}" alt="${c.name}" loading="lazy">`
                         : `<div class="drop-emoji">🃏</div>`}
@@ -201,8 +201,8 @@
         } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
     }
 
-    function seleccionar(cartaId, nombre, rareza, set, imagenUrl) {
-        cartaSeleccionada = { id: cartaId, nombre, rareza, imagenUrl };
+    function seleccionar(cartaId, nombre, rareza, set, imagenUrl, tcgId) {
+        cartaSeleccionada = { id: cartaId, nombre, rareza, imagenUrl, setCodigo: set, tcgId };
         input.value = nombre;
         cerrarDropdown();
         const selEmoji = document.getElementById('selEmoji');
@@ -241,6 +241,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nombre: cartaSeleccionada.nombre,
+                    setCodigo: cartaSeleccionada.setCodigo || '',
                     rareza: cartaSeleccionada.rareza,
                     imagenUrl: cartaSeleccionada.imagenUrl || ''
                 })

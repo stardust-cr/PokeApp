@@ -186,21 +186,27 @@ public class ColeccionMazoService {
     }
 
     public List<Carta> obtenerCartasDeUsuario(Long usuarioId) {
-        TypedQuery<Carta> query = entityManager.createQuery(
+        // Cartas en colecciones
+        TypedQuery<Carta> queryCol = entityManager.createQuery(
                 "SELECT DISTINCT cc.carta FROM ColeccionCarta cc WHERE cc.coleccion.usuario.id = :usuarioId",
                 Carta.class);
-        List<Carta> cartasDeColecciones = query.setParameter("usuarioId", usuarioId).getResultList();
-        List<Carta> cartasDeMazos = mazoRepository.findByUsuarioId(usuarioId)
-                .stream()
-                .flatMap(m -> m.getCartas().stream())
-                .map(Mazos_Cartas::getCarta)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Carta> cartasDeColecciones = queryCol.setParameter("usuarioId", usuarioId).getResultList();
+
+        // Cartas en mazos
+        TypedQuery<Carta> queryMazo = entityManager.createQuery(
+                "SELECT DISTINCT mc.carta FROM Mazos_Cartas mc WHERE mc.mazo.usuario.id = :usuarioId",
+                Carta.class);
+        List<Carta> cartasDeMazos = queryMazo.setParameter("usuarioId", usuarioId).getResultList();
+
+        // Combinar y deduplicar
         List<Carta> todasCartas = new ArrayList<>(cartasDeColecciones);
-        todasCartas.addAll(cartasDeMazos);
+        for (Carta c : cartasDeMazos) {
+            if (c != null && todasCartas.stream().noneMatch(e -> e.getId().equals(c.getId()))) {
+                todasCartas.add(c);
+            }
+        }
         return todasCartas.stream()
                 .filter(Objects::nonNull)
-                .distinct()
                 .collect(Collectors.toList());
     }
 }
