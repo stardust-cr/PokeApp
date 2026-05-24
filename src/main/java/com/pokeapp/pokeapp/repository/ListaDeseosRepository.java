@@ -16,6 +16,8 @@ public interface ListaDeseosRepository extends JpaRepository<Listadeseos, Long> 
 
     void deleteByUsuarioIdAndCartaId(Long usuarioId, Long cartaId);
 
+    void deleteByCartaId(Long cartaId);
+
     @Query("""
         SELECT ld FROM Listadeseos ld
         JOIN Venta v ON v.carta.id = ld.carta.id

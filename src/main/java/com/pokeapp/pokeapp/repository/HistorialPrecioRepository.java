@@ -21,4 +21,6 @@ public interface HistorialPrecioRepository extends JpaRepository<Historial_Preci
     List<Historial_Precios> findByCarta(Carta carta);
 
     Optional<Historial_Precios> findTopByCartaOrderByFechaCambioDesc(Carta carta);
+
+    void deleteByCartaId(Long cartaId);
 }

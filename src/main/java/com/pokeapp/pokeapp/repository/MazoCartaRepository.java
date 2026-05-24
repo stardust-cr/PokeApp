@@ -9,8 +9,10 @@ import org.springframework.stereotype.Repository;
 public interface MazoCartaRepository extends JpaRepository<Mazos_Cartas, Mazos_CartasId> {
  
     List<Mazos_Cartas> findById_MazoId(Long mazoId);
- 
+
     void deleteById_MazoIdAndId_CartaId(Long mazoId, Long cartaId);
- 
+
     boolean existsById_MazoIdAndId_CartaId(Long mazoId, Long cartaId);
+
+    void deleteByCartaId(Long cartaId);
 }

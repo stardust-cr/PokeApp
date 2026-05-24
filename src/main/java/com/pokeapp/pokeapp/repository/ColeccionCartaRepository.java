@@ -15,6 +15,8 @@ public interface ColeccionCartaRepository extends JpaRepository<ColeccionCarta, 
 
     void deleteByColeccionIdAndCartaId(Long coleccionId, Long cartaId);
 
+    void deleteByCartaId(Long cartaId);
+
     // Todas las cartas distintas que un usuario tiene en cualquier colección
     @Query("SELECT DISTINCT cc.carta FROM ColeccionCarta cc WHERE cc.coleccion.usuario.id = :usuarioId")
     List<com.pokeapp.pokeapp.model.Carta> findCartasByUsuarioId(Long usuarioId);

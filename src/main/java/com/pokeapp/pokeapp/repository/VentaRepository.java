@@ -19,6 +19,8 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Query("SELECT v FROM Venta v WHERE v.carta.id = :cartaId AND v.estado = 'PENDIENTE'")
     List<Venta> findActivasByCartaId(@Param("cartaId") Long cartaId);
 
+    List<Venta> findByCartaId(Long cartaId);
+
     @Query("SELECT v.carta.nombre, COUNT(v) as total FROM Venta v WHERE v.estado = 'COMPLETADA' GROUP BY v.carta.nombre ORDER BY total DESC")
     List<Object[]> findCartasMasVendidas();
 

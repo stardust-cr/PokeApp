@@ -17,4 +17,6 @@ public interface ValoracionRepository extends JpaRepository<Valoracion, Long> {
 
     // FIX: devuelve boolean (no List) + campo correcto es "usuario" (según modelo Valoracion)
     boolean existsByVentaIdAndUsuarioId(Long ventaId, Long usuarioId);
+
+    void deleteByVentaId(Long ventaId);
 }

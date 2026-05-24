@@ -4,10 +4,17 @@ import com.pokeapp.pokeapp.dto.CartaDTO;
 import com.pokeapp.pokeapp.model.Carta;
 import com.pokeapp.pokeapp.model.User;
 import com.pokeapp.pokeapp.repository.CartaRepository;
+import com.pokeapp.pokeapp.repository.ColeccionCartaRepository;
+import com.pokeapp.pokeapp.repository.HistorialPrecioRepository;
+import com.pokeapp.pokeapp.repository.ListaDeseosRepository;
+import com.pokeapp.pokeapp.repository.MazoCartaRepository;
 import com.pokeapp.pokeapp.repository.UserRepository;
+import com.pokeapp.pokeapp.repository.VentaRepository;
+import com.pokeapp.pokeapp.repository.ValoracionRepository;
 import com.pokeapp.pokeapp.service.AdminService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
@@ -18,13 +25,31 @@ public class AdminController {
     private final AdminService adminService;
     private final UserRepository userRepository;
     private final CartaRepository cartaRepository;
+    private final ColeccionCartaRepository coleccionCartaRepository;
+    private final MazoCartaRepository mazoCartaRepository;
+    private final HistorialPrecioRepository historialPrecioRepository;
+    private final ListaDeseosRepository listaDeseosRepository;
+    private final VentaRepository ventaRepository;
+    private final ValoracionRepository valoracionRepository;
 
     public AdminController(AdminService adminService,
                            UserRepository userRepository,
-                           CartaRepository cartaRepository) {
+                           CartaRepository cartaRepository,
+                           ColeccionCartaRepository coleccionCartaRepository,
+                           MazoCartaRepository mazoCartaRepository,
+                           HistorialPrecioRepository historialPrecioRepository,
+                           ListaDeseosRepository listaDeseosRepository,
+                           VentaRepository ventaRepository,
+                           ValoracionRepository valoracionRepository) {
         this.adminService = adminService;
         this.userRepository = userRepository;
         this.cartaRepository = cartaRepository;
+        this.coleccionCartaRepository = coleccionCartaRepository;
+        this.mazoCartaRepository = mazoCartaRepository;
+        this.historialPrecioRepository = historialPrecioRepository;
+        this.listaDeseosRepository = listaDeseosRepository;
+        this.ventaRepository = ventaRepository;
+        this.valoracionRepository = valoracionRepository;
     }
 
     private boolean esAdmin(HttpSession session) {
@@ -163,8 +188,30 @@ public class AdminController {
     }
 
     @PostMapping("/web/admin/cartas/{id}/eliminar")
+    @Transactional
     public String eliminarCarta(@PathVariable Long id, HttpSession session) {
         if (!esAdmin(session)) return "redirect:/web/home";
+        if (!cartaRepository.existsById(id)) return "redirect:/web/admin/cartas";
+
+        // 1. Borrar historial de precios
+        historialPrecioRepository.deleteByCartaId(id);
+
+        // 2. Borrar de listas de deseos
+        listaDeseosRepository.deleteByCartaId(id);
+
+        // 3. Borrar de colecciones
+        coleccionCartaRepository.deleteByCartaId(id);
+
+        // 4. Borrar de mazos
+        mazoCartaRepository.deleteByCartaId(id);
+
+        // 5. Para ventas: primero borrar valoraciones asociadas, luego las ventas
+        ventaRepository.findByCartaId(id).forEach(v -> {
+            valoracionRepository.deleteByVentaId(v.getId());
+            ventaRepository.delete(v);
+        });
+
+        // 6. Finalmente borrar la carta
         cartaRepository.deleteById(id);
         return "redirect:/web/admin/cartas";
     }
