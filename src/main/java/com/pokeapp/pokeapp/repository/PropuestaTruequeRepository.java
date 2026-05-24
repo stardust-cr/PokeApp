@@ -20,5 +20,7 @@ public interface PropuestaTruequeRepository extends JpaRepository<PropuestaTrueq
 
     // Contar pendientes para el badge de notificaciones
     long countByVenta_Vendedor_IdAndEstado(Long vendedorId, PropuestaTrueque.EstadoPropuesta estado);
+
+    List<PropuestaTrueque> findByVenta_Vendedor_Id(Long vendedorId);
 }
 

@@ -2,10 +2,16 @@ package com.pokeapp.pokeapp.controller;
 
 import com.pokeapp.pokeapp.dto.VentaDTO;
 import com.pokeapp.pokeapp.model.Listadeseos;
+import com.pokeapp.pokeapp.model.User;
 import com.pokeapp.pokeapp.model.Valoracion;
 import com.pokeapp.pokeapp.model.Venta;
+import com.pokeapp.pokeapp.repository.UserRepository;
 import com.pokeapp.pokeapp.service.VentaService;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -102,5 +108,15 @@ public class MercadoController {
 public ResponseEntity<List<VentaDTO.Response>> obtenerVentasActivas() {
     List<VentaDTO.Response> ventas = ventaService.obtenerMercado();
     return ResponseEntity.ok(ventas);
+}
+
+@GetMapping("/mercado/propuestas-recibidas")
+public String propuestasRecibidas(HttpSession session, Model model) {
+    if (session.getAttribute("username") == null) return "redirect:/web/login";
+    String username = (String) session.getAttribute("username");
+    User usuario = UserRepository.findByUsername(username).orElse(null);
+    model.addAttribute("username", username);
+    model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
+    return "propuestas-recibidas";
 }
 }

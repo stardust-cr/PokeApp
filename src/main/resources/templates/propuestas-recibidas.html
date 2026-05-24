@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Propuestas Recibidas — PokeApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── NAVBAR ── */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 1.4rem; font-weight: bold;
+            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+        }
+        .pokeball {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
+        .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
+        .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
+        .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
+        .nav-links { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .nav-links a {
+            color:white; text-decoration:none; font-weight:bold; font-size:0.88rem;
+            background:rgba(0,0,0,0.1); padding:8px 14px; border-radius:10px; transition:0.2s;
+        }
+        .nav-links a:hover { background:rgba(0,0,0,0.22); }
+        .nav-links a.activo { background:rgba(0,0,0,0.28); }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, #7B2FBE, #A855F7);
+            color: white; padding: 32px 24px; text-align: center;
+        }
+        .hero h1 { font-size: 1.8rem; margin-bottom: 6px; -webkit-text-stroke: 1px rgba(0,0,0,0.2); }
+        .hero p  { opacity: 0.9; font-size: 0.95rem; margin-bottom: 20px; }
+        .hero-stats { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .hero-stat {
+            background: rgba(255,255,255,0.2); border-radius: 16px;
+            padding: 12px 22px; text-align: center; min-width: 100px;
+        }
+        .hero-stat-num { font-size: 1.6rem; font-weight: bold; display: block; }
+        .hero-stat-lbl { font-size: 0.75rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ── TABS ── */
+        .tabs {
+            display: flex; justify-content: center; gap: 8px;
+            background: white; padding: 12px 20px; border-bottom: 4px solid #EEE;
+        }
+        .tab {
+            padding: 10px 22px; cursor: pointer; border-radius: 12px 12px 0 0;
+            color: #AAA; font-weight: bold; font-size: 0.9rem;
+            transition: 0.2s; text-decoration: none; border: 3px solid transparent;
+        }
+        .tab.activo {
+            color: #7B2FBE; background: #FFFDF5;
+            border: 3px solid #EEE; border-bottom: 3px solid #FFFDF5;
+            margin-bottom: -4px; z-index: 2;
+        }
+        .tab:hover:not(.activo) { color: #666; background: #F5F5F5; }
+
+        /* ── CONTENEDOR ── */
+        .container { max-width: 1000px; margin: 28px auto; padding: 0 20px; }
+
+        /* ── FILTRO ESTADO ── */
+        .filtro-estado {
+            display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap;
+        }
+        .btn-estado {
+            padding: 8px 18px; border-radius: 50px; border: 2px solid #EEE;
+            background: white; color: #AAA; font-weight: bold; font-size: 0.83rem;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-estado:hover { border-color: #CE93D8; color: #7B2FBE; }
+        .btn-estado.sel-PENDIENTE  { background: #FFF9C4; color: #78650A; border-color: #FDE68A; }
+        .btn-estado.sel-ACEPTADA   { background: #E8F5E9; color: #2E7D32; border-color: #B3E5BE; }
+        .btn-estado.sel-RECHAZADA  { background: #FFEBEE; color: #C62828; border-color: #FFCDD2; }
+        .btn-estado.sel-TODAS      { background: #F3E5F5; color: #6A1B9A; border-color: #CE93D8; }
+
+        /* ── LISTA ── */
+        .lista-propuestas { display: flex; flex-direction: column; gap: 16px; }
+
+        /* ── CARD PROPUESTA ── */
+        .propuesta-card {
+            background: white; border-radius: 22px;
+            border: 3px solid #E9D5FF; box-shadow: 0 5px 0 #EDE9FE;
+            overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeInUp 0.25s ease-out both;
+        }
+        .propuesta-card:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #EDE9FE; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:none;} }
+
+        .propuesta-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; background: #FAFAFA; border-bottom: 2px solid #F3E5F5;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .propuesta-meta { font-size: 0.8rem; color: #AAA; }
+        .propuesta-meta strong { color: #555; }
+
+        .estado-badge {
+            padding: 5px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 2px solid;
+        }
+        .estado-PENDIENTE  { background: #FFF9C4; color: #78650A; border-color: #FDE68A; }
+        .estado-ACEPTADA   { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
+        .estado-RECHAZADA  { background: #FFEBEE; color: #C62828; border-color: #FFCDD2; }
+
+        /* ── CUERPO: dos cartas + flecha + mensaje ── */
+        .propuesta-body {
+            padding: 18px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+        .carta-bloque {
+            flex: 1; min-width: 130px; display: flex; flex-direction: column;
+            align-items: center; gap: 8px;
+        }
+        .carta-img-wrap {
+            width: 100%; max-width: 130px; height: 130px;
+            border-radius: 14px; overflow: hidden;
+            border: 2px solid #EEE; background: #FAFAFA;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .carta-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+        .carta-img-wrap .emoji-fb { font-size: 2.5rem; }
+        .carta-label { font-size: 0.78rem; color: #AAA; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .carta-nombre-text { font-size: 0.9rem; font-weight: bold; color: #333; text-align: center; }
+        .carta-sub { font-size: 0.75rem; color: #AAA; text-align: center; }
+
+        .flecha-swap {
+            font-size: 1.8rem; color: #8E24AA; flex-shrink: 0;
+            display: flex; align-items: center; padding: 0 4px;
+        }
+
+        .mensaje-bloque {
+            flex: 1.5; min-width: 160px;
+        }
+        .mensaje-box {
+            background: #F9F0FF; border: 2px solid #E9D5FF; border-radius: 14px;
+            padding: 12px 14px; font-size: 0.85rem; color: #555; font-style: italic;
+            line-height: 1.5;
+        }
+        .mensaje-vacio { color: #CCC; font-style: italic; font-size: 0.82rem; }
+
+        /* ── ACCIONES ── */
+        .propuesta-footer {
+            padding: 12px 18px; border-top: 2px solid #F3E5F5;
+            display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+        }
+        .btn-aceptar {
+            background: #4CAF50; color: white; border: none;
+            border-radius: 12px; padding: 10px 22px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #388E3C;
+            transition: all 0.2s; font-size: 0.88rem;
+        }
+        .btn-aceptar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #388E3C; }
+        .btn-rechazar {
+            background: #EF5350; color: white; border: none;
+            border-radius: 12px; padding: 10px 22px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #C62828;
+            transition: all 0.2s; font-size: 0.88rem;
+        }
+        .btn-rechazar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #C62828; }
+        .respuesta-info {
+            font-size: 0.8rem; color: #AAA; display: flex; align-items: center; gap: 6px;
+        }
+
+        /* ── VACÍO ── */
+        .estado-lista { text-align: center; padding: 60px 20px; color: #CCC; }
+        .estado-lista .icono { font-size: 3rem; margin-bottom: 14px; }
+        .estado-lista h3 { color: #BBB; font-size: 1rem; margin-bottom: 6px; }
+        .estado-lista p  { font-size: 0.85rem; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            padding: 12px 28px; color: white; font-weight: bold; border-radius: 50px;
+            display: none; z-index: 2000; font-size: 0.9rem;
+        }
+        .toast.visible { display: block; }
+        .toast.exito { background: #81C784; }
+        .toast.error { background: #E57373; }
+
+        /* ── MODAL CONFIRMAR ── */
+        .overlay-confirmar {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5); display: none;
+            align-items: center; justify-content: center;
+            z-index: 300; backdrop-filter: blur(3px);
+        }
+        .overlay-confirmar.open { display: flex !important; }
+        .modal-confirmar {
+            background: white; padding: 28px; border-radius: 24px; width: 90%; max-width: 400px;
+            border: 4px solid #E9D5FF; box-shadow: 0 10px 0 #D8B4FE;
+            animation: fadeInUp 0.2s ease-out;
+        }
+        .modal-confirmar h3 { font-size: 1.1rem; color: #333; margin-bottom: 10px; }
+        .modal-confirmar p  { font-size: 0.88rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
+        .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-cancelar-modal {
+            background: #F0F0F0; color: #666; border: none;
+            border-radius: 12px; padding: 10px 18px; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <a th:href="@{/web/home}" class="topbar-logo">
+        <div class="pokeball">
+            <div class="pokeball-linea"></div>
+            <div class="btn-center"></div>
+        </div>
+        PokeApp
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/web/home}">Inicio</a>
+        <a th:href="@{/web/mercado}">Mercado</a>
+        <a th:href="@{/web/mercado/mis-ventas}">Mis Ventas</a>
+        <a th:href="@{/web/mercado/mis-compras}">Mis Compras</a>
+        <a th:href="@{/web/mercado/propuestas-recibidas}" class="activo">🔄 Propuestas</a>
+        <a th:href="@{/web/logout}">Salir</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+    <h1>🔄 Propuestas de Trueque</h1>
+    <p>Otros entrenadores quieren intercambiar cartas contigo</p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <span class="hero-stat-num" id="statPendientes">—</span>
+            <span class="hero-stat-lbl">Pendientes</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-num" id="statAceptadas">—</span>
+            <span class="hero-stat-lbl">Aceptadas</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-num" id="statRechazadas">—</span>
+            <span class="hero-stat-lbl">Rechazadas</span>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <a th:href="@{/web/mercado/mis-ventas}" class="tab">📦 Mis Ventas</a>
+    <a th:href="@{/web/mercado/mis-compras}" class="tab">🛒 Mis Compras</a>
+    <a th:href="@{/web/mercado/propuestas-recibidas}" class="tab activo">🔄 Propuestas Recibidas</a>
+</div>
+
+<div class="container">
+
+    <!-- Filtros de estado -->
+    <div class="filtro-estado">
+        <button class="btn-estado sel-TODAS" onclick="filtrar('TODAS')" id="btn-TODAS">📋 Todas</button>
+        <button class="btn-estado" onclick="filtrar('PENDIENTE')" id="btn-PENDIENTE">⏳ Pendientes</button>
+        <button class="btn-estado" onclick="filtrar('ACEPTADA')" id="btn-ACEPTADA">✅ Aceptadas</button>
+        <button class="btn-estado" onclick="filtrar('RECHAZADA')" id="btn-RECHAZADA">❌ Rechazadas</button>
+    </div>
+
+    <!-- Lista -->
+    <div class="lista-propuestas" id="listaPropuestas">
+        <div class="estado-lista">
+            <div class="icono">⏳</div>
+            <h3>Cargando propuestas...</h3>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal confirmación -->
+<div class="overlay-confirmar" id="overlayConfirmar">
+    <div class="modal-confirmar">
+        <h3 id="modalTitulo">¿Confirmar acción?</h3>
+        <p id="modalTexto"></p>
+        <div class="modal-btns">
+            <button class="btn-cancelar-modal" onclick="cerrarModal()">Cancelar</button>
+            <button id="modalBtnConfirmar" style="border:none; border-radius:12px; padding:10px 22px; font-weight:bold; cursor:pointer; color:white;">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const USUARIO_ID = /*[[${usuarioId}]]*/ 1;
+
+    let todasPropuestas = [];
+    let filtroActivo = 'TODAS';
+
+    async function cargarPropuestas() {
+        try {
+            const res = await fetch(`/api/trueques/recibidas-todas/${USUARIO_ID}`);
+            if (!res.ok) throw new Error();
+            todasPropuestas = await res.json();
+            actualizarStats();
+            renderLista(todasPropuestas);
+        } catch {
+            document.getElementById('listaPropuestas').innerHTML = `
+                <div class="estado-lista">
+                    <div class="icono">⚠️</div>
+                    <h3>Error al cargar las propuestas</h3>
+                    <p>Comprueba tu conexión e inténtalo de nuevo.</p>
+                </div>`;
+        }
+    }
+
+    function actualizarStats() {
+        document.getElementById('statPendientes').textContent  = todasPropuestas.filter(p => p.estado === 'PENDIENTE').length;
+        document.getElementById('statAceptadas').textContent   = todasPropuestas.filter(p => p.estado === 'ACEPTADA').length;
+        document.getElementById('statRechazadas').textContent  = todasPropuestas.filter(p => p.estado === 'RECHAZADA').length;
+    }
+
+    function filtrar(estado) {
+        filtroActivo = estado;
+        // Actualizar botones
+        ['TODAS','PENDIENTE','ACEPTADA','RECHAZADA'].forEach(e => {
+            const btn = document.getElementById('btn-' + e);
+            btn.className = 'btn-estado' + (e === estado ? ' sel-' + e : '');
+        });
+        const filtradas = estado === 'TODAS' ? todasPropuestas
+            : todasPropuestas.filter(p => p.estado === estado);
+        renderLista(filtradas);
+    }
+
+    function renderLista(propuestas) {
+        const lista = document.getElementById('listaPropuestas');
+        if (!propuestas.length) {
+            const msgs = {
+                TODAS:     ['🔄', 'No has recibido propuestas aún', 'Cuando alguien quiera intercambiar contigo, aparecerá aquí.'],
+                PENDIENTE: ['⏳', 'No tienes propuestas pendientes', 'Estás al día con todas las propuestas.'],
+                ACEPTADA:  ['✅', 'No has aceptado ninguna propuesta', ''],
+                RECHAZADA: ['❌', 'No has rechazado ninguna propuesta', ''],
+            };
+            const [ico, titulo, sub] = msgs[filtroActivo] || msgs.TODAS;
+            lista.innerHTML = `
+                <div class="estado-lista">
+                    <div class="icono">${ico}</div>
+                    <h3>${titulo}</h3>
+                    <p>${sub}</p>
+                </div>`;
+            return;
+        }
+        lista.innerHTML = propuestas.map((p, i) => {
+            const fecha   = new Date(p.fechaPropuesta).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'});
+            const esPend  = p.estado === 'PENDIENTE';
+            const imgVenta = p.cartaVentaImagenUrl
+                ? `<img src="${p.cartaVentaImagenUrl}" alt="${escH(p.cartaVentaNombre)}" loading="lazy">`
+                : `<span class="emoji-fb">🃏</span>`;
+            const imgOfrec = p.cartaOfrecidaImagenUrl
+                ? `<img src="${p.cartaOfrecidaImagenUrl}" alt="${escH(p.cartaOfrecidaNombre)}" loading="lazy">`
+                : `<span class="emoji-fb">🃏</span>`;
+
+            const mensajeHtml = p.mensaje
+                ? `<div class="mensaje-box">💬 "${escH(p.mensaje)}"</div>`
+                : `<p class="mensaje-vacio">Sin mensaje adicional</p>`;
+
+            const accionesHtml = esPend ? `
+                <button class="btn-aceptar" onclick="confirmarAccion(${p.id}, true, '${escJ(p.cartaVentaNombre)}', '${escJ(p.cartaOfrecidaNombre)}')">
+                    ✅ Aceptar trueque
+                </button>
+                <button class="btn-rechazar" onclick="confirmarAccion(${p.id}, false, '${escJ(p.cartaVentaNombre)}', '${escJ(p.cartaOfrecidaNombre)}')">
+                    ❌ Rechazar
+                </button>
+            ` : `
+                <span class="respuesta-info">
+                    ${p.estado === 'ACEPTADA' ? '✅ Trueque completado' : '❌ Propuesta rechazada'}
+                    ${p.fechaRespuesta ? ' · ' + new Date(p.fechaRespuesta).toLocaleDateString('es-ES', {day:'2-digit', month:'short'}) : ''}
+                </span>
+            `;
+
+            return `
+            <div class="propuesta-card" style="animation-delay:${i * 0.05}s">
+                <div class="propuesta-header">
+                    <div class="propuesta-meta">
+                        De <strong>${escH(p.proponenteNombre)}</strong> · ${fecha}
+                        <span style="color:#CE93D8; margin-left:8px;">para tu carta</span>
+                        <strong style="color:#7B2FBE"> ${escH(p.cartaVentaNombre)}</strong>
+                    </div>
+                    <span class="estado-badge estado-${p.estado}">${estadoLabel(p.estado)}</span>
+                </div>
+                <div class="propuesta-body">
+                    <div class="carta-bloque">
+                        <span class="carta-label">Tu carta</span>
+                        <div class="carta-img-wrap">${imgVenta}</div>
+                        <div class="carta-nombre-text">${escH(p.cartaVentaNombre)}</div>
+                        <div class="carta-sub">Publicación #${p.ventaId}</div>
+                    </div>
+                    <div class="flecha-swap">⇄</div>
+                    <div class="carta-bloque">
+                        <span class="carta-label">Te ofrecen</span>
+                        <div class="carta-img-wrap">${imgOfrec}</div>
+                        <div class="carta-nombre-text">${escH(p.cartaOfrecidaNombre)}</div>
+                        <div class="carta-sub">de ${escH(p.proponenteNombre)}</div>
+                    </div>
+                    <div class="mensaje-bloque">
+                        <div class="carta-label" style="margin-bottom:8px;">Mensaje</div>
+                        ${mensajeHtml}
+                    </div>
+                </div>
+                <div class="propuesta-footer">
+                    ${accionesHtml}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function estadoLabel(e) {
+        return { PENDIENTE: '⏳ Pendiente', ACEPTADA: '✅ Aceptada', RECHAZADA: '❌ Rechazada' }[e] || e;
+    }
+
+    // ── Confirmación antes de aceptar/rechazar ──────────────────────────────
+    let accionPendiente = null;
+
+    function confirmarAccion(propuestaId, aceptar, cartaVenta, cartaOfrec) {
+        accionPendiente = { propuestaId, aceptar };
+        const titulo  = document.getElementById('modalTitulo');
+        const texto   = document.getElementById('modalTexto');
+        const btnConf = document.getElementById('modalBtnConfirmar');
+
+        if (aceptar) {
+            titulo.textContent = '✅ Aceptar este trueque';
+            texto.innerHTML    = `Vas a aceptar intercambiar <strong>${escH(cartaVenta)}</strong> por <strong>${escH(cartaOfrec)}</strong>.<br><br>El resto de propuestas para esta publicación serán rechazadas automáticamente. Esta acción no se puede deshacer.`;
+            btnConf.style.background   = '#4CAF50';
+            btnConf.style.boxShadow    = '0 4px 0 #388E3C';
+            btnConf.textContent        = '✅ Sí, aceptar';
+        } else {
+            titulo.textContent = '❌ Rechazar esta propuesta';
+            texto.innerHTML    = `Vas a rechazar la propuesta de <strong>${escH(cartaOfrec)}</strong> a cambio de tu carta <strong>${escH(cartaVenta)}</strong>.`;
+            btnConf.style.background   = '#EF5350';
+            btnConf.style.boxShadow    = '0 4px 0 #C62828';
+            btnConf.textContent        = '❌ Sí, rechazar';
+        }
+        document.getElementById('overlayConfirmar').classList.add('open');
+    }
+
+    document.getElementById('modalBtnConfirmar').addEventListener('click', async () => {
+        if (!accionPendiente) return;
+        cerrarModal();
+        const { propuestaId, aceptar } = accionPendiente;
+        accionPendiente = null;
+        await responder(propuestaId, aceptar);
+    });
+
+    function cerrarModal() {
+        document.getElementById('overlayConfirmar').classList.remove('open');
+    }
+    document.getElementById('overlayConfirmar').addEventListener('click', e => {
+        if (e.target === document.getElementById('overlayConfirmar')) cerrarModal();
+    });
+
+    async function responder(propuestaId, aceptar) {
+        const endpoint = aceptar ? 'aceptar' : 'rechazar';
+        try {
+            const res = await fetch(`/api/trueques/${propuestaId}/${endpoint}?vendedorId=${USUARIO_ID}`, {
+                method: 'POST'
+            });
+            if (res.ok) {
+                mostrarToast(aceptar ? '¡Trueque aceptado! 🎉 La publicación se ha cerrado.' : 'Propuesta rechazada.', aceptar ? 'exito' : 'error');
+                await cargarPropuestas();
+                filtrar(filtroActivo);
+            } else {
+                const e = await res.json().catch(() => ({}));
+                mostrarToast(e.mensaje || 'Error al procesar la respuesta', 'error');
+            }
+        } catch {
+            mostrarToast('Error de red', 'error');
+        }
+    }
+
+    function mostrarToast(msg, tipo = 'exito') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = `toast ${tipo} visible`;
+        setTimeout(() => t.classList.remove('visible'), 3500);
+    }
+    function escH(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escJ(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+    cargarPropuestas();
+</script>
+
+</body>
+</html>

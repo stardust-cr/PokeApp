@@ -59,7 +59,7 @@ public class MercadoWebController {
     public String verMercado(HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         return "mercado";
@@ -74,7 +74,7 @@ public class MercadoWebController {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
 
         String username = (String) session.getAttribute("username");
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         Long usuarioId = usuario != null ? usuario.getId() : null;
 
         List<Carta> misCartas = new ArrayList<>();
@@ -156,7 +156,7 @@ public class MercadoWebController {
     public String misVentas(HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         return "MisVentas";
@@ -166,7 +166,7 @@ public class MercadoWebController {
     public String misCompras(HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         return "MisCompras";
@@ -178,7 +178,7 @@ public class MercadoWebController {
                                           Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         model.addAttribute("vendedorId", vendedorId);

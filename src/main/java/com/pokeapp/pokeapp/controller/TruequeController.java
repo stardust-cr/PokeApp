@@ -72,5 +72,10 @@ public class TruequeController {
         long total = truequeService.contarPropuestasPendientes(vendedorId);
         return ResponseEntity.ok(Map.of("total", total));
     }
+
+    @GetMapping("/recibidas-todas/{vendedorId}")
+public ResponseEntity<List<PropuestaTruequeDTO.Response>> recibidasTodas(@PathVariable Long vendedorId) {
+    return ResponseEntity.ok(truequeService.todasPropuestasRecibidas(vendedorId));
+}
 }
 

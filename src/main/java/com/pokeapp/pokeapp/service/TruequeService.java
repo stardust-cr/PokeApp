@@ -125,5 +125,10 @@ public class TruequeService {
         r.setFechaRespuesta(p.getFechaRespuesta());
         return r;
     }
+
+    public List<PropuestaTruequeDTO.Response> todasPropuestasRecibidas(Long vendedorId) {
+    return propuestaRepository.findByVenta_Vendedor_Id(vendedorId)
+            .stream().map(this::toResponse).collect(Collectors.toList());
+}
 }
 
