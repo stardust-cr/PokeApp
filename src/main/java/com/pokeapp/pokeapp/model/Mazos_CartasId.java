@@ -4,16 +4,35 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Embeddable
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Mazos_CartasId implements Serializable {
     private Long mazoId;
     private Long cartaId;
+
+    public Mazos_CartasId() {
+    }
+
+    public Mazos_CartasId(Long mazoId, Long cartaId) {
+        this.mazoId = mazoId;
+        this.cartaId = cartaId;
+    }
+
+    public Long getMazoId() {
+        return mazoId;
+    }
+
+    public void setMazoId(Long mazoId) {
+        this.mazoId = mazoId;
+    }
+
+    public Long getCartaId() {
+        return cartaId;
+    }
+
+    public void setCartaId(Long cartaId) {
+        this.cartaId = cartaId;
+    }
 
     @Override
     public boolean equals(Object o) {

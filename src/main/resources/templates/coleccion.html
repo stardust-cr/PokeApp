@@ -278,7 +278,34 @@
         </div>
     </div>
 </div>
+<!-- Modal añadir carta a colección -->
+<div class="overlay" id="overlayAñadirCarta">
+    <div class="modal" style="max-width:520px;">
+        <button class="cerrar" onclick="cerrar('overlayAñadirCarta')">✕</button>
+        <h2>Añadir carta a <span id="añadirColNombre" style="color:#E63946;"></span></h2>
 
+        <label>Buscar carta</label>
+        <div style="position:relative;margin-bottom:10px;">
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">🔍</span>
+            <input type="text" id="inputAñadirCarta" placeholder="Escribe el nombre..." autocomplete="off"
+                   style="width:100%;padding:12px 16px 12px 42px;border:2px solid #EEE;border-radius:12px;font-size:0.95rem;outline:none;background:#FAFAFA;">
+        </div>
+        <div id="dropdownAñadir" style="background:white;border:2px solid #EEE;border-radius:12px;max-height:240px;overflow-y:auto;display:none;box-shadow:0 8px 20px rgba(0,0,0,0.08);margin-bottom:12px;"></div>
+
+        <div id="cartaSeleccionadaAñadir" style="display:none;align-items:center;gap:12px;background:#E1F5FE;border:2px solid #7AACCF;border-radius:12px;padding:11px 16px;margin-bottom:14px;">
+            <img style="width:44px;height:44px;object-fit:contain;border-radius:6px;background:#fff;" src="" alt="">
+            <div style="flex:1;">
+                <div class="sel-nombre" style="font-weight:bold;font-size:0.9rem;color:#0369A1;"></div>
+                <div class="sel-rareza" style="font-size:0.75rem;color:#7AACCF;margin-top:2px;"></div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrar('overlayAñadirCarta')">Cancelar</button>
+            <button class="btn-ok" onclick="confirmarAñadirCarta()">➕ Añadir</button>
+        </div>
+    </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -382,6 +409,7 @@ async function cargarColecciones() {
     }
 }
 
+// Reemplaza renderGrid completo
 function renderGrid(colecciones) {
     const grid  = document.getElementById('grid');
     const empty = document.getElementById('empty');
@@ -395,15 +423,118 @@ function renderGrid(colecciones) {
             <div class="coleccion-cuerpo">
                 <div class="coleccion-nombre">${c.nombre}</div>
                 <div class="coleccion-fecha">📅 ${formatFecha(c.creadaEn)}</div>
-                <div class="coleccion-id">ID: ${c.id}</div>
+                <div class="coleccion-id" id="count-${c.id}">Cargando cartas...</div>
             </div>
-            <div class="coleccion-footer">
+            <div class="coleccion-footer" style="display:flex;gap:8px;">
+                <button class="btn-eliminar" style="flex:1;" onclick="abrirAñadirCarta(${c.id}, '${esc(c.nombre)}')">
+                    ➕ Añadir carta
+                </button>
                 <button class="btn-eliminar" onclick="pedirEliminar(${c.id}, '${esc(c.nombre)}')">
-                    🗑 Eliminar
+                    🗑
                 </button>
             </div>
         </div>
     `).join('');
+    colecciones.forEach(c => cargarConteoCartas(c.id));
+}
+
+async function cargarConteoCartas(coleccionId) {
+    try {
+        const res   = await fetch(`${API}/colecciones/${coleccionId}/cartas`);
+        const items = await res.json();
+        const el    = document.getElementById('count-' + coleccionId);
+        if (el) el.textContent = `${items.length} carta${items.length !== 1 ? 's' : ''}`;
+    } catch { /* silencioso */ }
+}
+
+// Variables para el modal de añadir carta
+let coleccionActualId   = null;
+let cartaParaAñadir     = null;
+let timerAñadir         = null;
+
+function abrirAñadirCarta(coleccionId, nombre) {
+    coleccionActualId = coleccionId;
+    cartaParaAñadir   = null;
+    document.getElementById('añadirColNombre').textContent = nombre;
+    document.getElementById('inputAñadirCarta').value = '';
+    document.getElementById('dropdownAñadir').style.display = 'none';
+    document.getElementById('cartaSeleccionadaAñadir').style.display = 'none';
+    document.getElementById('overlayAñadirCarta').classList.add('open');
+    setTimeout(() => document.getElementById('inputAñadirCarta').focus(), 100);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('inputAñadirCarta');
+    if (!inp) return;
+    inp.addEventListener('input', () => {
+        clearTimeout(timerAñadir);
+        const q = inp.value.trim();
+        if (q.length < 2) { document.getElementById('dropdownAñadir').style.display = 'none'; return; }
+        timerAñadir = setTimeout(() => buscarParaAñadir(q), 350);
+    });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#inputAñadirCarta') && !e.target.closest('#dropdownAñadir'))
+            document.getElementById('dropdownAñadir').style.display = 'none';
+    });
+});
+
+async function buscarParaAñadir(q) {
+    const dd = document.getElementById('dropdownAñadir');
+    dd.innerHTML = '<div style="padding:14px;text-align:center;color:#AAA;font-size:0.85rem;">Buscando...</div>';
+    dd.style.display = 'block';
+    try {
+        const res   = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=10`);
+        const data  = await res.json();
+        const cartas = data.data || [];
+        if (!cartas.length) { dd.innerHTML = '<div style="padding:14px;text-align:center;color:#AAA;">Sin resultados</div>'; return; }
+        dd.innerHTML = cartas.map(c => {
+            const img = c.images?.small || '';
+            return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #F5F5F5;" onmouseover="this.style.background='#FFF0F0'" onmouseout="this.style.background='white'" onclick="seleccionarParaAñadir('${esc(c.id)}','${esc(c.name)}','${esc(c.rarity||'')}','${esc(c.set?.id||'')}','${esc(img)}')">
+                ${img ? `<img src="${img}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;background:#FAFAFA;">` : '<span style="font-size:1.3rem;width:36px;text-align:center;">🃏</span>'}
+                <div>
+                    <div style="font-weight:bold;font-size:0.88rem;color:#333;">${c.name}</div>
+                    <div style="font-size:0.75rem;color:#AAA;">${c.rarity||''} · ${c.set?.name||''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch { dd.innerHTML = '<div style="padding:14px;text-align:center;color:#AAA;">Error al buscar</div>'; }
+}
+
+async function seleccionarParaAñadir(tcgId, nombre, rareza, setCodigo, imagenUrl) {
+    document.getElementById('dropdownAñadir').style.display = 'none';
+    document.getElementById('inputAñadirCarta').value = nombre;
+    // Importar / obtener id local
+    try {
+        const res   = await fetch('/api/cartas/importar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, setCodigo, rareza: rareza || 'COMUN', imagenUrl })
+        });
+        const carta = await res.json();
+        cartaParaAñadir = carta.id;
+        const sel = document.getElementById('cartaSeleccionadaAñadir');
+        sel.querySelector('.sel-nombre').textContent = nombre;
+        sel.querySelector('.sel-rareza').textContent = (rareza||'').replace('_',' ') + (setCodigo ? ' · ' + setCodigo : '');
+        const imgEl = sel.querySelector('img');
+        if (imagenUrl) { imgEl.src = imagenUrl; imgEl.style.display = 'block'; }
+        else             imgEl.style.display = 'none';
+        sel.style.display = 'flex';
+    } catch { toast('Error al importar la carta', false); }
+}
+
+async function confirmarAñadirCarta() {
+    if (!coleccionActualId || !cartaParaAñadir) return toast('Selecciona una carta primero', false);
+    try {
+        const res = await fetch(`${API}/colecciones/${coleccionActualId}/cartas?cartaId=${cartaParaAñadir}&cantidad=1`, { method: 'POST' });
+        if (res.ok) {
+            toast('Carta añadida ✓', true);
+            cerrar('overlayAñadirCarta');
+            cargarConteoCartas(coleccionActualId);
+        } else {
+            const err = await res.json().catch(() => ({}));
+            toast(err?.mensaje || 'Error al añadir', false);
+        }
+    } catch { toast('Error de conexión', false); }
 }
 
 function abrirModalCrear() {

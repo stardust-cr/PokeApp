@@ -12,6 +12,7 @@ import com.pokeapp.pokeapp.repository.ListaDeseosRepository;
 import com.pokeapp.pokeapp.repository.MazoCartaRepository;
 import com.pokeapp.pokeapp.repository.MazoRepository;
 import com.pokeapp.pokeapp.repository.UserRepository;
+import com.pokeapp.pokeapp.service.ColeccionMazoService;
 import com.pokeapp.pokeapp.service.VentaService;
 
 import jakarta.servlet.http.HttpSession;
@@ -36,19 +37,22 @@ public class MercadoWebController {
     private final ListaDeseosRepository listaDeseosRepository;
     private final MazoRepository mazoRepository;
     private final MazoCartaRepository mazoCartaRepository;
+    private final ColeccionMazoService coleccionMazoService;
 
     public MercadoWebController(VentaService ventaService,
                                  UserRepository userRepository,
                                  CartaRepository cartaRepository,
                                  ListaDeseosRepository listaDeseosRepository,
                                  MazoRepository mazoRepository,
-                                 MazoCartaRepository mazoCartaRepository) {
+                                 MazoCartaRepository mazoCartaRepository,
+                                 ColeccionMazoService coleccionMazoService) {
         this.ventaService          = ventaService;
         this.userRepository        = userRepository;
         this.cartaRepository       = cartaRepository;
         this.listaDeseosRepository = listaDeseosRepository;
         this.mazoRepository        = mazoRepository;
         this.mazoCartaRepository   = mazoCartaRepository;
+        this.coleccionMazoService  = coleccionMazoService;
     }
 
     @GetMapping("/mercado")
@@ -99,7 +103,7 @@ public class MercadoWebController {
                             .collect(Collectors.toList());
                 }
             } else {
-                misCartas = cartaRepository.findAll();
+                misCartas = coleccionMazoService.obtenerCartasDeUsuario(usuarioId);
             }
         }
 
