@@ -18,32 +18,17 @@ public class TruequeController {
         this.truequeService = truequeService;
     }
 
-    /** Proponer un trueque */
-    @PostMapping("/proponer")
-    public ResponseEntity<?> proponer(@RequestBody PropuestaTruequeDTO.CrearRequest req) {
+    /**
+     * Intercambio directo: el usuario pulsa el botón y se ejecuta el trueque
+     * automáticamente usando su primera carta disponible.
+     */
+    @PostMapping("/intercambio-directo")
+    public ResponseEntity<?> intercambioDirecto(
+            @RequestParam Long ventaId,
+            @RequestParam Long proponenteId) {
         try {
-            return ResponseEntity.ok(truequeService.proponerTrueque(req));
+            return ResponseEntity.ok(truequeService.intercambioDirecto(ventaId, proponenteId));
         } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
-        }
-    }
-
-    /** Aceptar una propuesta */
-    @PostMapping("/{propuestaId}/aceptar")
-    public ResponseEntity<?> aceptar(@PathVariable Long propuestaId, @RequestParam Long vendedorId) {
-        try {
-            return ResponseEntity.ok(truequeService.responderPropuesta(propuestaId, vendedorId, true));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
-        }
-    }
-
-    /** Rechazar una propuesta */
-    @PostMapping("/{propuestaId}/rechazar")
-    public ResponseEntity<?> rechazar(@PathVariable Long propuestaId, @RequestParam Long vendedorId) {
-        try {
-            return ResponseEntity.ok(truequeService.responderPropuesta(propuestaId, vendedorId, false));
-        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
@@ -74,8 +59,8 @@ public class TruequeController {
     }
 
     @GetMapping("/recibidas-todas/{vendedorId}")
-public ResponseEntity<List<PropuestaTruequeDTO.Response>> recibidasTodas(@PathVariable Long vendedorId) {
-    return ResponseEntity.ok(truequeService.todasPropuestasRecibidas(vendedorId));
-}
+    public ResponseEntity<List<PropuestaTruequeDTO.Response>> recibidasTodas(@PathVariable Long vendedorId) {
+        return ResponseEntity.ok(truequeService.todasPropuestasRecibidas(vendedorId));
+    }
 }
 

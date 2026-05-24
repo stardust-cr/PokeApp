@@ -8,7 +8,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
 
-        /* ── NAVBAR ── */
         .topbar {
             display: flex; justify-content: space-between; align-items: center;
             background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
@@ -33,16 +32,13 @@
         }
         .nav-links a:hover { background:rgba(0,0,0,0.22); }
 
-        /* ── BANNER HERO ── */
         .hero {
             background: linear-gradient(135deg, #E63946, #FF8A8A);
             color: white; padding: 36px 24px; text-align: center;
         }
         .hero h1 { font-size: 1.8rem; margin-bottom: 6px; -webkit-text-stroke: 1px rgba(0,0,0,0.2); }
         .hero p  { opacity: 0.9; font-size: 0.95rem; margin-bottom: 20px; }
-        .hero-stats {
-            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
-        }
+        .hero-stats { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
         .hero-stat {
             background: rgba(255,255,255,0.2); border-radius: 16px;
             padding: 12px 22px; text-align: center; min-width: 100px;
@@ -50,10 +46,8 @@
         .hero-stat-num { font-size: 1.6rem; font-weight: bold; display: block; }
         .hero-stat-lbl { font-size: 0.75rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* ── CONTENEDOR ── */
         .container { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
 
-        /* ── FILTROS ── */
         .filtros {
             background: white; border-radius: 20px; padding: 18px 20px;
             border: 3px solid #EEE; box-shadow: 0 4px 0 #F0F0F0;
@@ -78,7 +72,6 @@
         }
         .btn-filtrar:hover { transform: translateY(2px); box-shadow: 0 2px 0 #E57373; }
 
-        /* ── SECCIÓN HEADER ── */
         .seccion-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
@@ -93,14 +86,12 @@
         }
         .btn-vender:hover { transform: translateY(2px); box-shadow: 0 2px 0 #7DD3FC; }
 
-        /* ── GRID CARTAS ── */
         .grid-cartas {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 18px;
         }
 
-        /* ── CARTA CARD ── */
         .carta-card {
             background: white; border-radius: 22px; overflow: hidden;
             border: 3px solid #FF8A8A; box-shadow: 0 5px 0 #FFD1D1;
@@ -109,17 +100,13 @@
         }
         .carta-card:hover { transform: translateY(-5px); box-shadow: 0 10px 0 #FFD1D1; }
         .carta-banner {
-    background: linear-gradient(135deg, #FFF9C4, #FDE68A);
-    height: 180px; text-align: center; position: relative;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-}
-.carta-banner img {
-    width: 100%; height: 100%; object-fit: contain; display: block;
-}
-.carta-banner .emoji-fallback {
-    font-size: 2.5rem;
-}
+            background: linear-gradient(135deg, #FFF9C4, #FDE68A);
+            height: 180px; text-align: center; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .carta-banner img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .carta-banner .emoji-fallback { font-size: 2.5rem; }
         .rareza-badge {
             position: absolute; top: 10px; right: 10px;
             padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: bold;
@@ -135,17 +122,13 @@
         .carta-body { padding: 16px; flex: 1; }
         .carta-nombre { font-weight: bold; font-size: 1rem; color: #333; margin-bottom: 4px; }
         .carta-set    { font-size: 0.8rem; color: #AAA; margin-bottom: 10px; }
-        .carta-precio {
-            font-size: 1.2rem; font-weight: bold; color: #E63946;
-            margin-bottom: 4px;
-        }
+        .carta-precio { font-size: 1.2rem; font-weight: bold; color: #E63946; margin-bottom: 4px; }
         .carta-tipo-badge {
             display: inline-block; padding: 4px 10px; border-radius: 50px;
             font-size: 0.72rem; font-weight: bold;
         }
         .tipo-VENTA   { background:#E3F2FD; color:#1E88E5; }
         .tipo-TRUEQUE { background:#F3E5F5; color:#8E24AA; }
-
         .carta-vendedor { font-size: 0.8rem; color: #AAA; margin-top: 8px; }
 
         .carta-footer { padding: 12px 16px; border-top: 2px solid #FEE; display:flex; gap:8px; }
@@ -155,6 +138,13 @@
             cursor:pointer; box-shadow:0 4px 0 #E57373; transition:all 0.2s; font-size:0.88rem;
         }
         .btn-comprar:hover { transform:translateY(2px); box-shadow:0 2px 0 #E57373; }
+        .btn-trueque {
+            flex:1; background:#8E24AA; color:white; border:none;
+            border-radius:12px; padding:10px; font-weight:bold;
+            cursor:pointer; box-shadow:0 4px 0 #6A1B9A; transition:all 0.2s; font-size:0.88rem;
+        }
+        .btn-trueque:hover { transform:translateY(2px); box-shadow:0 2px 0 #6A1B9A; }
+        .btn-trueque:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
         .btn-wishlist {
             background:white; color:#E63946; border:2px solid #FFB3B3;
             border-radius:12px; padding:10px 12px; cursor:pointer; font-size:1rem;
@@ -162,12 +152,10 @@
         }
         .btn-wishlist:hover { background:#FEE2E2; }
 
-        /* ── VACÍO / CARGANDO ── */
         .estado-grid { text-align:center; padding:50px 20px; color:#CCC; }
         .estado-grid .icono { font-size:2.5rem; margin-bottom:14px; }
         .estado-grid h3 { color:#BBB; font-size:1rem; margin-bottom:6px; }
 
-        /* ── TOAST ── */
         .toast {
             position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
             padding:12px 28px; color:white; font-weight:bold; border-radius:50px;
@@ -216,7 +204,6 @@
 
 <div class="container">
 
-    <!-- Filtros -->
     <div class="filtros">
         <div class="filtro-grupo">
             <label>Buscar carta</label>
@@ -249,7 +236,6 @@
         <button class="btn-filtrar" onclick="aplicarFiltros()">🔍 Filtrar</button>
     </div>
 
-    <!-- Header -->
     <div class="seccion-header">
         <div>
             <div class="seccion-titulo">Anuncios disponibles</div>
@@ -258,7 +244,6 @@
         <a th:href="@{/web/venta/nueva}" class="btn-vender">+ Poner en venta</a>
     </div>
 
-    <!-- Grid -->
     <div class="grid-cartas" id="gridCartas">
         <div class="estado-grid" style="grid-column:1/-1">
             <div class="icono">⏳</div>
@@ -271,7 +256,7 @@
 <div class="toast" id="toast"></div>
 
 <script th:inline="javascript">
-    const USUARIO_ID  = /*[[${usuarioId}]]*/ 1;
+    const USUARIO_ID  = /*[[${usuarioId}]]*/ null;
     const API_MERCADO = '/api/mercado';
 
     const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
@@ -296,41 +281,47 @@
     }
 
     function renderGrid(ventas) {
-    const grid = document.getElementById('gridCartas');
-    document.getElementById('countAnuncios').textContent = `${ventas.length} anuncio${ventas.length!==1?'s':''}`;
-    if (!ventas.length) {
-        grid.innerHTML = '<div class="estado-grid" style="grid-column:1/-1"><div class="icono">🔍</div><h3>No hay anuncios con esos filtros</h3></div>';
-        return;
+        const grid = document.getElementById('gridCartas');
+        document.getElementById('countAnuncios').textContent = `${ventas.length} anuncio${ventas.length!==1?'s':''}`;
+        if (!ventas.length) {
+            grid.innerHTML = '<div class="estado-grid" style="grid-column:1/-1"><div class="icono">🔍</div><h3>No hay anuncios con esos filtros</h3></div>';
+            return;
+        }
+        grid.innerHTML = ventas.map(v => {
+            const rareza    = v.cartaRareza || 'COMUN';
+            const emoji     = RAREZA_EMOJI[rareza] || '🃏';
+            const esTrueque = v.tipo === 'TRUEQUE';
+            const esMio     = v.vendedorId === USUARIO_ID;
+            const banner    = v.cartaImagenUrl
+                ? `<img src="${v.cartaImagenUrl}" alt="${escH(v.cartaNombre||'')}" loading="lazy">`
+                : `<span class="emoji-fallback">${emoji}</span>`;
+
+            const botonAccion = esMio
+                ? `<button class="btn-comprar" disabled style="opacity:0.4;cursor:not-allowed">Tu anuncio</button>`
+                : esTrueque
+                    ? `<button class="btn-trueque" onclick="intercambiar(${v.id}, this)">🔄 Intercambiar</button>`
+                    : `<button class="btn-comprar" onclick="comprar(${v.id}, this)">🛒 Comprar</button>`;
+
+            return `
+            <div class="carta-card">
+                <div class="carta-banner">
+                    ${banner}
+                    <span class="rareza-badge rareza-${rareza}">${rareza.replace('_',' ')}</span>
+                </div>
+                <div class="carta-body">
+                    <div class="carta-nombre">${escH(v.cartaNombre || 'Carta #'+v.cartaId)}</div>
+                    <div class="carta-set">${escH(v.cartaSet || '')}</div>
+                    <div class="carta-precio">${esTrueque ? '🔄 Trueque' : (v.precio ? '€'+parseFloat(v.precio).toFixed(2) : '—')}</div>
+                    <span class="carta-tipo-badge tipo-${v.tipo}">${v.tipo}</span>
+                    <div class="carta-vendedor">Vendedor: ${escH(v.vendedorNombre || 'Desconocido')}</div>
+                </div>
+                <div class="carta-footer">
+                    ${botonAccion}
+                    <button class="btn-wishlist" title="Añadir a wishlist" onclick="addWishlist(${v.cartaId})">♡</button>
+                </div>
+            </div>`;
+        }).join('');
     }
-    grid.innerHTML = ventas.map(v => {
-        const rareza    = v.cartaRareza || 'COMUN';
-        const emoji     = RAREZA_EMOJI[rareza] || '🃏';
-        const esTrueque = v.tipo === 'TRUEQUE';
-        const banner    = v.cartaImagenUrl
-            ? `<img src="${v.cartaImagenUrl}" alt="${v.cartaNombre || ''}" loading="lazy">`
-            : `<span class="emoji-fallback">${emoji}</span>`;
-        return `
-        <div class="carta-card">
-            <div class="carta-banner">
-                ${banner}
-                <span class="rareza-badge rareza-${rareza}">${rareza.replace('_',' ')}</span>
-            </div>
-            <div class="carta-body">
-                <div class="carta-nombre">${v.cartaNombre || 'Carta #'+v.cartaId}</div>
-                <div class="carta-set">${v.cartaSet || ''}</div>
-                <div class="carta-precio">${esTrueque ? '🔄 Trueque' : (v.precio ? '€'+parseFloat(v.precio).toFixed(2) : '—')}</div>
-                <span class="carta-tipo-badge tipo-${v.tipo}">${v.tipo}</span>
-                <div class="carta-vendedor">Vendedor: ${v.vendedorNombre || 'Desconocido'}</div>
-            </div>
-            <div class="carta-footer">
-                <button class="btn-comprar" onclick="${esTrueque ? `proponerTrueque(${v.id})` : `comprar(${v.id})`}">
-                    ${esTrueque ? '🔄 Proponer trueque' : '🛒 Comprar'}
-                </button>
-                <button class="btn-wishlist" title="Añadir a wishlist" onclick="addWishlist(${v.cartaId})">♡</button>
-            </div>
-        </div>`;
-    }).join('');
-}
 
     function aplicarFiltros() {
         const busqueda = document.getElementById('filtroBusqueda').value.toLowerCase().trim();
@@ -348,83 +339,44 @@
         renderGrid(filtradas);
     }
 
-    async function comprar(ventaId) {
-    try {
-        const res = await fetch(`${API_MERCADO}/${ventaId}/comprar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ compradorId: USUARIO_ID })
-        });
-        if (res.ok) { mostrarToast('¡Compra realizada! 🎉', 'exito'); cargarMercado(); }
-        else { const e = await res.text(); mostrarToast('Error: ' + e, 'error'); }
-    } catch { mostrarToast('Error de red', 'error'); }
-}
-
-    // ── TRUEQUE ─────────────────────────────────────────────────────────────
-    let ventaTruequeActiva = null;
-
-    async function proponerTrueque(ventaId) {
-        ventaTruequeActiva = ventaId;
-        // Cargar cartas del usuario para ofrecer
-        const grid = document.getElementById('gridCartasOfrecer');
-        grid.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">⏳ Cargando tus cartas...</div>';
-        document.getElementById('overlayTrueque').classList.add('open');
-        document.getElementById('inpMensajeTrueque').value = '';
-        cartaOfrecer = null;
+    async function comprar(ventaId, btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳...';
         try {
-            const res = await fetch(`/api/colecciones/usuario/${USUARIO_ID}/cartas`);
-            let cartas = [];
-            if (res.ok) cartas = await res.json();
-            if (!cartas.length) {
-                grid.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">No tienes cartas en tus colecciones para ofrecer</div>';
-                return;
-            }
-            grid.innerHTML = cartas.map(c => `
-                <div class="carta-ofrecer" id="co-${c.id}" onclick="selCartaOfrecer(${c.id},'${escJ(c.nombre)}')">
-                    ${c.imagenUrl ? `<img src="${c.imagenUrl}" alt="${c.nombre}" style="width:100%;height:100px;object-fit:contain;background:#fafafa;display:block;border-radius:10px 10px 0 0;">` : `<div style="height:100px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#F5F5F5;border-radius:10px 10px 0 0;">🃏</div>`}
-                    <div style="padding:8px 10px;font-size:0.8rem;font-weight:bold;color:#333">${escH(c.nombre)}</div>
-                </div>
-            `).join('');
-        } catch {
-            grid.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">Error al cargar cartas</div>';
-        }
-    }
-
-    let cartaOfrecer = null;
-    function selCartaOfrecer(id, nombre) {
-        cartaOfrecer = id;
-        document.querySelectorAll('.carta-ofrecer').forEach(el => el.classList.remove('seleccionada'));
-        const el = document.getElementById('co-' + id);
-        if (el) el.classList.add('seleccionada');
-        document.getElementById('cartaSelLabel').textContent = nombre;
-    }
-
-    async function confirmarTrueque() {
-        if (!cartaOfrecer) return mostrarToast('Selecciona una carta para ofrecer', 'error');
-        const mensaje = document.getElementById('inpMensajeTrueque').value.trim();
-        try {
-            const res = await fetch('/api/trueques/proponer', {
+            const res = await fetch(`${API_MERCADO}/${ventaId}/comprar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ventaId: ventaTruequeActiva,
-                    proponenteId: USUARIO_ID,
-                    cartaOfrecidaId: cartaOfrecer,
-                    mensaje: mensaje || null
-                })
+                body: JSON.stringify({ compradorId: USUARIO_ID })
             });
-            if (res.ok) {
-                mostrarToast('¡Propuesta enviada! El vendedor recibirá tu oferta 🔄', 'exito');
-                cerrarOverlay('overlayTrueque');
-            } else {
-                const e = await res.json().catch(()=>{});
-                mostrarToast(e?.mensaje || 'Error al enviar propuesta', 'error');
-            }
-        } catch { mostrarToast('Error de red', 'error'); }
+            if (res.ok) { mostrarToast('¡Compra realizada! 🎉', 'exito'); cargarMercado(); }
+            else { const e = await res.json().catch(()=>{}); mostrarToast(e?.mensaje || 'Error al comprar', 'error'); btn.disabled=false; btn.textContent='🛒 Comprar'; }
+        } catch { mostrarToast('Error de red', 'error'); btn.disabled=false; btn.textContent='🛒 Comprar'; }
     }
 
-    function cerrarOverlay(id) { document.getElementById(id).classList.remove('open'); }
-    document.querySelectorAll('.overlay-trueque').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+    // ── TRUEQUE DIRECTO — sin diálogo, sin modal ─────────────────────────
+    async function intercambiar(ventaId, btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Intercambiando...';
+        try {
+            const res = await fetch(
+                `/api/trueques/intercambio-directo?ventaId=${ventaId}&proponenteId=${USUARIO_ID}`,
+                { method: 'POST' }
+            );
+            if (res.ok) {
+                mostrarToast('¡Trueque realizado! 🔄', 'exito');
+                cargarMercado();
+            } else {
+                const e = await res.json().catch(()=>{});
+                mostrarToast(e?.mensaje || 'Error al intercambiar', 'error');
+                btn.disabled = false;
+                btn.textContent = '🔄 Intercambiar';
+            }
+        } catch {
+            mostrarToast('Error de red', 'error');
+            btn.disabled = false;
+            btn.textContent = '🔄 Intercambiar';
+        }
+    }
 
     async function addWishlist(cartaId) {
         try {
@@ -443,7 +395,6 @@
         setTimeout(() => t.classList.remove('visible'), 3000);
     }
     function escH(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function escJ(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
     document.getElementById('filtroBusqueda').addEventListener('input', aplicarFiltros);
     document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
@@ -451,54 +402,6 @@
 
     cargarMercado();
 </script>
-
-<!-- ── MODAL PROPONER TRUEQUE ─────────────────────────────────────────── -->
-<div class="overlay-trueque" id="overlayTrueque" style="
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center;
-    z-index:200; backdrop-filter:blur(3px);">
-    <div style="
-        background:white; padding:28px; border-radius:26px; width:90%; max-width:520px;
-        border:4px solid #E9D5FF; box-shadow:0 10px 0 #D8B4FE; position:relative;
-        max-height:90vh; overflow-y:auto;
-        animation: fadeInUp 0.25s ease-out;">
-        <button onclick="cerrarOverlay('overlayTrueque')" style="
-            position:absolute; top:14px; right:14px; background:#F0F0F0; border:none;
-            width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:0.9rem; color:#888;">✕</button>
-
-        <h2 style="font-size:1.1rem; color:#333; margin-bottom:6px;">🔄 Proponer trueque</h2>
-        <p style="font-size:0.82rem; color:#AAA; margin-bottom:18px;">Elige una de tus cartas para ofrecer a cambio</p>
-
-        <div id="cartaSelLabel" style="
-            background:#F3E5F5; color:#6A1B9A; border:2px solid #CE93D8;
-            border-radius:10px; padding:9px 14px; font-size:0.85rem; font-weight:bold;
-            margin-bottom:14px; min-height:38px;">
-            Ninguna carta seleccionada
-        </div>
-
-        <div id="gridCartasOfrecer" style="
-            display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr));
-            gap:10px; max-height:260px; overflow-y:auto; margin-bottom:16px;">
-        </div>
-
-        <label style="display:block; font-size:0.78rem; color:#888; font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Mensaje (opcional)</label>
-        <textarea id="inpMensajeTrueque" placeholder="Ej: ¡Me interesa mucho esta carta! Ofrezco la mía en perfecto estado."
-            style="width:100%; padding:10px 12px; border:2px solid #EEE; border-radius:12px; font-size:0.88rem; min-height:70px; resize:vertical; outline:none; font-family:inherit; margin-bottom:16px;"></textarea>
-
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button onclick="cerrarOverlay('overlayTrueque')" style="background:#F0F0F0; color:#666; border:none; border-radius:12px; padding:10px 16px; font-weight:bold; cursor:pointer;">Cancelar</button>
-            <button onclick="confirmarTrueque()" style="background:#8E24AA; color:white; border:none; border-radius:12px; padding:10px 22px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #6A1B9A;">📨 Enviar propuesta</button>
-        </div>
-    </div>
-</div>
-
-<style>
-    .overlay-trueque.open { display:flex !important; }
-    .carta-ofrecer { border:2px solid #EEE; border-radius:12px; cursor:pointer; transition:0.15s; overflow:hidden; }
-    .carta-ofrecer:hover { border-color:#CE93D8; background:#F9F0FF; }
-    .carta-ofrecer.seleccionada { border-color:#8E24AA; background:#F3E5F5; box-shadow:0 0 0 2px #CE93D8; }
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:none;} }
-</style>
 
 </body>
 </html>
