@@ -366,10 +366,11 @@ async function buscarCol(q) {
         if (!cartas.length) { dropdownCol.innerHTML = '<div style="padding: 14px 16px; text-align: center; color: #AAA;">Sin resultados</div>'; return; }
         dropdownCol.innerHTML = cartas.slice(0, 10).map(c => {
             const rareza = c.rarity || 'COMUN';
-            const emoji = RAREZA_EMOJI[rareza] || '🃏';
             const img = c.images?.small || '';
             return `<div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer; border-bottom: 2px solid #F8F8F8; transition: background 0.15s;" onmouseover="this.style.background='#F0F8FF'" onmouseout="this.style.background='white'" onclick="seleccionarCol(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(img)}')">
-                <div style="font-size: 1.3rem; width: 32px; text-align: center; flex-shrink: 0;">${emoji}</div>
+                ${img
+                    ? `<img src="${img}" alt="${esc(c.name)}" style="width:36px;height:50px;object-fit:contain;border-radius:5px;flex-shrink:0;" loading="lazy">`
+                    : `<div style="font-size:1.3rem;width:36px;text-align:center;flex-shrink:0;">🃏</div>`}
                 <div>
                     <div style="font-weight: bold; font-size: 0.88rem; color: #333;">${c.name}</div>
                     <div style="font-size: 0.75rem; color: #AAA; margin-top: 1px;">${rareza} · ${c.set?.name||''}</div>
