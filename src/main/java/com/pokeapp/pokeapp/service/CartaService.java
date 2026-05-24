@@ -102,14 +102,28 @@ public class CartaService {
         if (setCodigo != null && !setCodigo.isBlank()) {
             var existente = cartaRepository.findByNombreAndSetCodigo(nombre, setCodigo);
             if (existente.isPresent()) {
-                return toResponse(existente.get());
+                Carta c = existente.get();
+                // Actualizar imagenUrl si la carta guardada no tiene imagen pero la nueva sí
+                if ((c.getImagenUrl() == null || c.getImagenUrl().isBlank())
+                        && imagenUrl != null && !imagenUrl.isBlank()) {
+                    c.setImagenUrl(imagenUrl);
+                    cartaRepository.save(c);
+                }
+                return toResponse(c);
             }
         } else {
             // Sin set: buscar solo por nombre exacto
             var coincidencias = cartaRepository.findByNombreContainingIgnoreCase(nombre)
                     .stream().filter(c -> c.getNombre().equalsIgnoreCase(nombre)).toList();
             if (!coincidencias.isEmpty()) {
-                return toResponse(coincidencias.get(0));
+                Carta c = coincidencias.get(0);
+                // Actualizar imagenUrl si la carta guardada no tiene imagen pero la nueva sí
+                if ((c.getImagenUrl() == null || c.getImagenUrl().isBlank())
+                        && imagenUrl != null && !imagenUrl.isBlank()) {
+                    c.setImagenUrl(imagenUrl);
+                    cartaRepository.save(c);
+                }
+                return toResponse(c);
             }
         }
 

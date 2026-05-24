@@ -271,15 +271,19 @@ public class WebController {
 
     @PostMapping("/perfil/avatar")
     public String cambiarAvatar(@RequestParam("imagen") MultipartFile imagen,
-                                 HttpSession session) throws IOException {
+                                 HttpSession session) {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/web/login";
         User usuario = userRepository.findByUsername(username).orElse(null);
         if (usuario == null) return "redirect:/web/login";
         if (!imagen.isEmpty()) {
-            usuario.setProfileImage(imagen.getBytes());
-            userRepository.save(usuario);
-            session.setAttribute("perfilOk", "Foto actualizada correctamente.");
+            try {
+                usuario.setProfileImage(imagen.getBytes());
+                userRepository.save(usuario);
+                session.setAttribute("perfilOk", "Foto actualizada correctamente.");
+            } catch (IOException e) {
+                session.setAttribute("perfilError", "Error al procesar la imagen.");
+            }
         }
         return "redirect:/web/perfil";
     }
