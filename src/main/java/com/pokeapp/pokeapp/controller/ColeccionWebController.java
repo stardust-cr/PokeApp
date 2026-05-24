@@ -42,7 +42,7 @@ public class ColeccionWebController {
         if (username == null) {
             return "redirect:/web/login";
         }
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         if (usuario == null) {
             return "redirect:/web/login";
         }
@@ -64,7 +64,7 @@ public class ColeccionWebController {
         if (username == null) {
             return "redirect:/web/login";
         }
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         if (usuario == null) {
             return "redirect:/web/login";
         }
@@ -86,7 +86,7 @@ public class ColeccionWebController {
         if (username == null) {
             return "redirect:/web/login";
         }
-        User usuario = userRepository.findByUsername(username).orElse(null);
+        User usuario = UserRepository.findByUsername(username).orElse(null);
         if (usuario == null) {
             return "redirect:/web/login";
         }
@@ -106,7 +106,7 @@ public class ColeccionWebController {
 public String valoraciones(HttpSession session, Model model) {
     String username = (String) session.getAttribute("username");
     if (username == null) return "redirect:/web/login";
-    User usuario = userRepository.findByUsername(username).orElse(null);
+    User usuario = UserRepository.findByUsername(username).orElse(null);
     if (usuario == null) return "redirect:/web/login";
     model.addAttribute("vendedorId", usuario.getId());
     model.addAttribute("usuarioId", usuario.getId());
@@ -118,7 +118,7 @@ public String valoraciones(HttpSession session, Model model) {
 public String mazos(HttpSession session, Model model) {
     String username = (String) session.getAttribute("username");
     if (username == null) return "redirect:/web/login";
-    User usuario = userRepository.findByUsername(username).orElse(null);
+    User usuario = UserRepository.findByUsername(username).orElse(null);
     if (usuario == null) return "redirect:/web/login";
     model.addAttribute("usuarioId", usuario.getId());
     return "mazos";
@@ -136,7 +136,7 @@ public String verMazo(@PathVariable Long id, HttpSession session, Model model) {
 public String editarMazo(@PathVariable Long id, HttpSession session, Model model) {
     String username = (String) session.getAttribute("username");
     if (username == null) return "redirect:/web/login";
-    com.pokeapp.pokeapp.model.User usuario = userRepository.findByUsername(username).orElse(null);
+    com.pokeapp.pokeapp.model.User usuario = UserRepository.findByUsername(username).orElse(null);
     if (usuario == null) return "redirect:/web/login";
     model.addAttribute("mazoId", id);
     model.addAttribute("usuarioId", usuario.getId());
@@ -147,7 +147,7 @@ public String editarMazo(@PathVariable Long id, HttpSession session, Model model
 public String buscarMazos(HttpSession session, Model model) {
     String username = (String) session.getAttribute("username");
     if (username == null) return "redirect:/web/login";
-    com.pokeapp.pokeapp.model.User usuario = userRepository.findByUsername(username).orElse(null);
+    com.pokeapp.pokeapp.model.User usuario = UserRepository.findByUsername(username).orElse(null);
     if (usuario == null) return "redirect:/web/login";
     model.addAttribute("usuarioId", usuario.getId());
     model.addAttribute("username", username);

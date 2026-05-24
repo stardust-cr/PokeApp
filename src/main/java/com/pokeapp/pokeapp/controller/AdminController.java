@@ -55,7 +55,7 @@ public class AdminController {
     private boolean esAdmin(HttpSession session) {
         String username = (String) session.getAttribute("username");
         if (username == null) return false;
-        User user = userRepository.findByUsername(username).orElse(null);
+        User user = UserRepository.findByUsername(username).orElse(null);
         return user != null && "ADMIN".equals(user.getRol());
     }
 
