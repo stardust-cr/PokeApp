@@ -109,9 +109,17 @@
         }
         .carta-card:hover { transform: translateY(-5px); box-shadow: 0 10px 0 #FFD1D1; }
         .carta-banner {
-            background: linear-gradient(135deg, #FFF9C4, #FDE68A);
-            padding: 20px; text-align: center; font-size: 2.5rem; position: relative;
-        }
+    background: linear-gradient(135deg, #FFF9C4, #FDE68A);
+    height: 180px; text-align: center; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.carta-banner img {
+    width: 100%; height: 100%; object-fit: contain; display: block;
+}
+.carta-banner .emoji-fallback {
+    font-size: 2.5rem;
+}
         .rareza-badge {
             position: absolute; top: 10px; right: 10px;
             padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: bold;
@@ -288,39 +296,41 @@
     }
 
     function renderGrid(ventas) {
-        const grid = document.getElementById('gridCartas');
-        document.getElementById('countAnuncios').textContent = `${ventas.length} anuncio${ventas.length!==1?'s':''}`;
-        if (!ventas.length) {
-            grid.innerHTML = '<div class="estado-grid" style="grid-column:1/-1"><div class="icono">🔍</div><h3>No hay anuncios con esos filtros</h3></div>';
-            return;
-        }
-        grid.innerHTML = ventas.map(v => {
-            const emoji = RAREZA_EMOJI[v.cartaRareza] || '🃏';
-            const esTrueque = v.tipo === 'TRUEQUE';
-            return `
-            <div class="carta-card">
-                <div class="carta-banner" style="${v.cartaImagenUrl ? 'background:#fafafa;padding:0;' : ''}">
-                    ${v.cartaImagenUrl
-                        ? `<img src="${v.cartaImagenUrl}" alt="${v.cartaNombre||''}" style="width:100%;height:100%;object-fit:contain;display:block;" loading="lazy">`
-                        : emoji}
-                    <span class="rareza-badge rareza-${v.cartaRareza || 'COMUN'}">${(v.cartaRareza||'COMUN').replace('_',' ')}</span>
-                </div>
-                <div class="carta-body">
-                    <div class="carta-nombre">${v.cartaNombre || 'Carta #'+v.cartaId}</div>
-                    <div class="carta-set">${v.cartaSet || ''}</div>
-                    <div class="carta-precio">${esTrueque ? '🔄 Trueque' : (v.precio ? '€'+parseFloat(v.precio).toFixed(2) : '—')}</div>
-                    <span class="carta-tipo-badge tipo-${v.tipo}">${v.tipo}</span>
-                    <div class="carta-vendedor">Vendedor: ${v.vendedorNombre || 'Desconocido'}</div>
-                </div>
-                <div class="carta-footer">
-                    <button class="btn-comprar" onclick="comprar(${v.id})">
-                        ${esTrueque ? '🔄 Proponer trueque' : '🛒 Comprar'}
-                    </button>
-                    <button class="btn-wishlist" title="Añadir a wishlist" onclick="addWishlist(${v.cartaId})">♡</button>
-                </div>
-            </div>`;
-        }).join('');
+    const grid = document.getElementById('gridCartas');
+    document.getElementById('countAnuncios').textContent = `${ventas.length} anuncio${ventas.length!==1?'s':''}`;
+    if (!ventas.length) {
+        grid.innerHTML = '<div class="estado-grid" style="grid-column:1/-1"><div class="icono">🔍</div><h3>No hay anuncios con esos filtros</h3></div>';
+        return;
     }
+    grid.innerHTML = ventas.map(v => {
+        const rareza    = v.cartaRareza || 'COMUN';
+        const emoji     = RAREZA_EMOJI[rareza] || '🃏';
+        const esTrueque = v.tipo === 'TRUEQUE';
+        const banner    = v.cartaImagenUrl
+            ? `<img src="${v.cartaImagenUrl}" alt="${v.cartaNombre || ''}" loading="lazy">`
+            : `<span class="emoji-fallback">${emoji}</span>`;
+        return `
+        <div class="carta-card">
+            <div class="carta-banner">
+                ${banner}
+                <span class="rareza-badge rareza-${rareza}">${rareza.replace('_',' ')}</span>
+            </div>
+            <div class="carta-body">
+                <div class="carta-nombre">${v.cartaNombre || 'Carta #'+v.cartaId}</div>
+                <div class="carta-set">${v.cartaSet || ''}</div>
+                <div class="carta-precio">${esTrueque ? '🔄 Trueque' : (v.precio ? '€'+parseFloat(v.precio).toFixed(2) : '—')}</div>
+                <span class="carta-tipo-badge tipo-${v.tipo}">${v.tipo}</span>
+                <div class="carta-vendedor">Vendedor: ${v.vendedorNombre || 'Desconocido'}</div>
+            </div>
+            <div class="carta-footer">
+                <button class="btn-comprar" onclick="${esTrueque ? `proponerTrueque(${v.id})` : `comprar(${v.id})`}">
+                    ${esTrueque ? '🔄 Proponer trueque' : '🛒 Comprar'}
+                </button>
+                <button class="btn-wishlist" title="Añadir a wishlist" onclick="addWishlist(${v.cartaId})">♡</button>
+            </div>
+        </div>`;
+    }).join('');
+}
 
     function aplicarFiltros() {
         const busqueda = document.getElementById('filtroBusqueda').value.toLowerCase().trim();
@@ -339,15 +349,16 @@
     }
 
     async function comprar(ventaId) {
-        try {
-            const res = await fetch(`${API_MERCADO}/comprar`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ ventaId, compradorId: USUARIO_ID })
-            });
-            if (res.ok) { mostrarToast('¡Compra realizada! 🎉','exito'); cargarMercado(); }
-            else { const e = await res.text(); mostrarToast('Error: '+e,'error'); }
-        } catch { mostrarToast('Error de red','error'); }
-    }
+    try {
+        const res = await fetch(`${API_MERCADO}/${ventaId}/comprar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ compradorId: USUARIO_ID })
+        });
+        if (res.ok) { mostrarToast('¡Compra realizada! 🎉', 'exito'); cargarMercado(); }
+        else { const e = await res.text(); mostrarToast('Error: ' + e, 'error'); }
+    } catch { mostrarToast('Error de red', 'error'); }
+}
 
     async function addWishlist(cartaId) {
         try {

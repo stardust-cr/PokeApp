@@ -6,131 +6,109 @@
     <title>Nueva Venta — PokeApp</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #FFFDF5; min-height: 100vh; padding-bottom: 50px;
-        }
+        body { font-family: Arial, Helvetica, sans-serif; background: #FFFDF5; min-height: 100vh; padding-bottom: 50px; }
+
         .topbar {
             display: flex; justify-content: space-between; align-items: center;
             background-color: #E63946; padding: 14px 24px; box-shadow: 0 4px 0 #C62828;
         }
         .topbar-logo {
-            display: flex; align-items: center; gap: 10px;
-            color: white; font-size: 1.3rem; font-weight: bold;
-            -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; color: white;
+            font-size: 1.3rem; font-weight: bold; -webkit-text-stroke: 2px #1a1a1a; text-decoration: none;
         }
-        .pokeball {
-            width: 36px; height: 36px; border-radius: 50%;
-            border: 3px solid #1a1a1a; position: relative; overflow: hidden; flex-shrink: 0;
-        }
+        .pokeball { width:36px; height:36px; border-radius:50%; border:3px solid #1a1a1a; position:relative; overflow:hidden; flex-shrink:0; }
         .pokeball::before { content:''; position:absolute; top:0; left:0; width:100%; height:50%; background:#E63946; }
         .pokeball::after  { content:''; position:absolute; bottom:0; left:0; width:100%; height:50%; background:white; }
         .pokeball-linea { position:absolute; top:50%; left:0; transform:translateY(-50%); width:100%; height:3px; background:#1a1a1a; z-index:1; }
         .pokeball .btn-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:12px; height:12px; background:white; border-radius:50%; border:3px solid #1a1a1a; z-index:2; }
-        .back-btn {
-            color:white; text-decoration:none; font-weight:bold;
-            background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px;
-            font-size:0.9rem; transition:background 0.2s;
-        }
+        .back-btn { color:white; text-decoration:none; font-weight:bold; background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:12px; font-size:0.9rem; }
         .back-btn:hover { background:rgba(255,255,255,0.35); }
+
         .container { max-width: 600px; margin: 36px auto; padding: 0 20px; }
         .form-card {
-            background: white; border-radius: 28px;
-            border: 4px solid #FFB3B3; box-shadow: 0 10px 0 #FFD1D1;
-            padding: 36px; animation: fadeInUp 0.4s ease-out;
+            background: white; border-radius: 28px; border: 4px solid #FFB3B3;
+            box-shadow: 0 10px 0 #FFD1D1; padding: 36px; animation: fadeInUp 0.4s ease-out;
         }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: none; }
-        }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
         .form-title { font-size: 1.4rem; font-weight: bold; color: #333; margin-bottom: 6px; }
         .form-subtitle { color: #AAA; font-size: 0.88rem; margin-bottom: 28px; }
+
         .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block; font-size: 0.85rem; color: #888;
-            font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+        .form-group label { display:block; font-size:0.85rem; color:#888; font-weight:bold; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width:100%; padding:13px 16px; border:2px solid #EEE; border-radius:14px;
+            font-size:0.95rem; color:#333; outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+            background:#FAFAFA; font-family:inherit;
         }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%; padding: 13px 16px; border: 2px solid #EEE;
-            border-radius: 14px; font-size: 0.95rem; color: #333;
-            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-            background: #FAFAFA; font-family: inherit;
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color:#FF8A8A; background:white; box-shadow:0 0 0 4px rgba(255,138,138,0.12);
         }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: #FF8A8A; background: white;
-            box-shadow: 0 0 0 4px rgba(255,138,138,0.12);
+        .form-group textarea { height:90px; resize:none; }
+
+        /* ── BUSCADOR ── */
+        .search-wrap { position: relative; }
+        .search-wrap input { padding-right: 44px; }
+        .search-spinner {
+            position:absolute; right:14px; top:50%; transform:translateY(-50%);
+            width:18px; height:18px; border:2px solid #EEE; border-top-color:#FF8A8A;
+            border-radius:50%; animation:spin 0.7s linear infinite; display:none;
         }
-        .form-group input::placeholder,
-        .form-group textarea::placeholder { color: #CCC; }
-        .form-group textarea { height: 90px; resize: none; }
-        .fuente-toggle { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-        .fuente-btn {
-            flex: 1; min-width: 100px; padding: 10px 12px; border-radius: 12px;
-            border: 2px solid #EEE; cursor: pointer; font-weight: bold;
-            font-size: 0.85rem; text-align: center; background: white;
-            color: #888; transition: all 0.2s; text-decoration: none; display: block;
+        @keyframes spin { to { transform:translateY(-50%) rotate(360deg); } }
+        .search-results {
+            position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:100;
+            background:white; border:2px solid #EEE; border-radius:14px;
+            box-shadow:0 8px 24px rgba(0,0,0,0.1); max-height:260px; overflow-y:auto; display:none;
         }
-        .fuente-btn:hover { border-color: #FF8A8A; color: #FF8A8A; }
-        .fuente-btn.activo { background: #FFF0F0; color: #E63946; border-color: #FF8A8A; }
-        .tipo-toggle { display: flex; gap: 10px; }
-        .tipo-btn {
-            flex: 1; padding: 13px; border-radius: 14px; border: 2px solid #EEE;
-            cursor: pointer; font-weight: bold; font-size: 0.9rem;
-            text-align: center; background: white; color: #888; transition: all 0.2s;
+        .search-item {
+            display:flex; align-items:center; gap:12px; padding:10px 14px;
+            cursor:pointer; transition:background 0.15s; border-bottom:1px solid #F5F5F5;
         }
-        .tipo-btn.activo.venta   { background: #E3F2FD; color: #1E88E5; border-color: #B3D4F5; }
-        .tipo-btn.activo.trueque { background: #F3E5F5; color: #8E24AA; border-color: #CE93D8; }
-        #grupoPrecio { transition: opacity 0.3s; }
-        #grupoPrecio.oculto { opacity: 0.3; pointer-events: none; }
-        .alert { border-radius: 12px; padding: 12px 16px; font-size: 0.88rem; margin-bottom: 16px; }
-        .alert-danger  { background: rgba(255,107,107,0.15); color: #C62828; border-left: 4px solid #F87171; }
-        .alert-success { background: rgba(78,205,196,0.15);  color: #0E7490; border-left: 4px solid #4ECDC4; }
-        .form-footer { display: flex; gap: 12px; margin-top: 10px; }
-        .btn-publicar {
-            flex: 1; padding: 15px; background: #FF8A8A; color: white;
-            border: none; border-radius: 16px; font-size: 1rem; font-weight: bold;
-            cursor: pointer; box-shadow: 0 6px 0 #E57373; transition: all 0.2s;
-        }
-        .btn-publicar:hover  { transform: translateY(2px); box-shadow: 0 3px 0 #E57373; }
-        .btn-publicar:active { transform: translateY(5px); box-shadow: 0 1px 0 #E57373; }
-        .btn-cancelar {
-            padding: 15px 22px; background: #F0F0F0; color: #666;
-            border: none; border-radius: 16px; font-size: 0.95rem; font-weight: bold;
-            cursor: pointer; transition: background 0.2s; text-decoration: none;
-            display: flex; align-items: center;
-        }
-        .btn-cancelar:hover { background: #E0E0E0; }
+        .search-item:last-child { border-bottom:none; }
+        .search-item:hover { background:#FFF0F0; }
+        .search-item img { width:40px; height:40px; object-fit:contain; border-radius:6px; background:#FAFAFA; flex-shrink:0; }
+        .search-item-emoji { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+        .search-item-info { flex:1; min-width:0; }
+        .search-item-name { font-weight:bold; font-size:0.9rem; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .search-item-meta { font-size:0.75rem; color:#AAA; margin-top:2px; }
+        .search-no-results { padding:16px; text-align:center; color:#AAA; font-size:0.88rem; }
+
+        /* ── PREVIEW ── */
         .carta-preview {
-            border-radius: 18px; overflow: hidden;
-            border: 3px solid #FDE68A; margin-bottom: 20px; display: none;
-            background: linear-gradient(135deg, #FFF9C4, #FDE68A);
+            border-radius:18px; overflow:hidden; border:3px solid #FDE68A;
+            margin-bottom:20px; display:none;
         }
-        .carta-preview-img {
-            width: 100%; max-height: 220px; object-fit: contain;
-            display: block; background: #fafafa;
-        }
-        .carta-preview-emoji { font-size: 2.5rem; display: block; margin: 20px auto; text-align: center; }
-        .carta-preview-info  { padding: 12px 16px; text-align: center; }
-        .carta-preview .nombre { font-weight: bold; font-size: 1rem; color: #333; }
-        .carta-preview .rareza { font-size: 0.8rem; color: #888; margin-top: 3px; }
-        .fuente-info {
-            font-size: 0.8rem; color: #AAA; margin-top: 6px;
-            padding: 8px 12px; background: #FAFAFA; border-radius: 10px;
-        }
-        .fuente-info.warn { color: #E63946; }
+        .carta-preview-img { width:100%; max-height:220px; object-fit:contain; display:block; background:#fafafa; }
+        .carta-preview-emoji { font-size:3rem; display:block; text-align:center; padding:24px; background:linear-gradient(135deg,#FFF9C4,#FDE68A); }
+        .carta-preview-info { padding:12px 16px; text-align:center; background:linear-gradient(135deg,#FFF9C4,#FDE68A); }
+        .carta-preview-info .nombre { font-weight:bold; font-size:1rem; color:#333; }
+        .carta-preview-info .rareza { font-size:0.8rem; color:#888; margin-top:3px; }
+
+        /* ── TIPO TOGGLE ── */
+        .tipo-toggle { display:flex; gap:10px; }
+        .tipo-btn { flex:1; padding:13px; border-radius:14px; border:2px solid #EEE; cursor:pointer; font-weight:bold; font-size:0.9rem; text-align:center; background:white; color:#888; transition:all 0.2s; }
+        .tipo-btn.activo.venta   { background:#E3F2FD; color:#1E88E5; border-color:#B3D4F5; }
+        .tipo-btn.activo.trueque { background:#F3E5F5; color:#8E24AA; border-color:#CE93D8; }
+
+        #grupoPrecio { transition:opacity 0.3s; }
+        #grupoPrecio.oculto { opacity:0.3; pointer-events:none; }
+
+        .alert { border-radius:12px; padding:12px 16px; font-size:0.88rem; margin-bottom:16px; }
+        .alert-danger  { background:rgba(255,107,107,0.15); color:#C62828; border-left:4px solid #F87171; }
+        .alert-success { background:rgba(78,205,196,0.15);  color:#0E7490; border-left:4px solid #4ECDC4; }
+
+        .form-footer { display:flex; gap:12px; margin-top:10px; }
+        .btn-publicar { flex:1; padding:15px; background:#FF8A8A; color:white; border:none; border-radius:16px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 6px 0 #E57373; transition:all 0.2s; }
+        .btn-publicar:hover  { transform:translateY(2px); box-shadow:0 3px 0 #E57373; }
+        .btn-publicar:active { transform:translateY(5px); box-shadow:0 1px 0 #E57373; }
+        .btn-cancelar { padding:15px 22px; background:#F0F0F0; color:#666; border:none; border-radius:16px; font-size:0.95rem; font-weight:bold; cursor:pointer; text-decoration:none; display:flex; align-items:center; }
+        .btn-cancelar:hover { background:#E0E0E0; }
+        .btn-publicar:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:0 6px 0 #E57373; }
     </style>
 </head>
 <body>
 <nav class="topbar">
     <a th:href="@{/web/mercado}" class="topbar-logo">
-        <div class="pokeball">
-            <div class="pokeball-linea"></div>
-            <div class="btn-center"></div>
-        </div>
+        <div class="pokeball"><div class="pokeball-linea"></div><div class="btn-center"></div></div>
         Nueva Venta
     </a>
     <a th:href="@{/web/mercado}" class="back-btn">← Volver al mercado</a>
@@ -139,74 +117,37 @@
 <div class="container">
     <div class="form-card">
         <div class="form-title">📦 Poner carta en venta</div>
-        <div class="form-subtitle">Completa los datos de tu anuncio</div>
+        <div class="form-subtitle">Busca la carta y completa los datos</div>
 
         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
         <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
 
-        <!-- SELECTOR DE FUENTE -->
-        <div class="form-group">
-            <label>Buscar carta en</label>
-            <div class="fuente-toggle">
-                <a th:href="@{/web/venta/nueva(fuente='coleccion')}"
-                   th:classappend="${fuenteActiva == 'coleccion'} ? ' activo' : ''"
-                   class="fuente-btn">🗂 Colección</a>
-                <a th:href="@{/web/venta/nueva(fuente='wishlist')}"
-                   th:classappend="${fuenteActiva == 'wishlist'} ? ' activo' : ''"
-                   class="fuente-btn">⭐ Wishlist</a>
-                <a th:href="@{/web/venta/nueva(fuente='mazo')}"
-                   th:classappend="${fuenteActiva == 'mazo'} ? ' activo' : ''"
-                   class="fuente-btn">🃏 Mazo</a>
-            </div>
-
-            <!-- Selector de mazo concreto -->
-            <div th:if="${fuenteActiva == 'mazo'}" style="margin-top:10px;">
-                <select id="mazoSelector" onchange="irAMazo(this)">
-                    <option value="">— Todos mis mazos —</option>
-                    <option th:each="mazo : ${misMazos}"
-                            th:value="${mazo.id}"
-                            th:text="${mazo.nombre}"
-                            th:selected="${mazo.id == mazoIdActivo}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="fuente-info"      th:if="${fuenteActiva == 'wishlist'}">Mostrando cartas de tu lista de deseos.</div>
-            <div class="fuente-info"      th:if="${fuenteActiva == 'mazo'}">Mostrando cartas de tus mazos.</div>
-            <div class="fuente-info"      th:if="${fuenteActiva == 'coleccion' or fuenteActiva == null}">Mostrando todas las cartas del catálogo.</div>
-        </div>
-
         <form th:action="@{/web/venta/crear}" method="post" id="formVenta">
             <input type="hidden" name="vendedorId" th:value="${usuarioId}"/>
+            <input type="hidden" name="cartaId"    id="cartaIdInput"/>
 
+            <!-- BUSCADOR -->
             <div class="form-group">
-                <label>Carta a vender</label>
-                <div th:if="${#lists.isEmpty(misCartas)}" class="fuente-info warn">
-                    No hay cartas en esta fuente. Prueba con otra opción.
+                <label>Buscar carta</label>
+                <div class="search-wrap">
+                    <input type="text" id="buscadorCarta" autocomplete="off"
+                           placeholder="Escribe el nombre de la carta..."/>
+                    <div class="search-spinner" id="searchSpinner"></div>
+                    <div class="search-results" id="searchResults"></div>
                 </div>
-                <select name="cartaId" id="cartaSelect" required onchange="actualizarPreview()"
-                        th:unless="${#lists.isEmpty(misCartas)}">
-                    <option value="" disabled selected>-- Selecciona una carta --</option>
-                    <option th:each="carta : ${misCartas}"
-                            th:value="${carta.id}"
-                            th:text="${carta.nombre + ' (' + carta.rareza + ')'}"
-                            th:attr="data-rareza=${carta.rareza},
-                                     data-nombre=${carta.nombre},
-                                     data-imagen=${carta.imagenUrl}">
-                    </option>
-                </select>
             </div>
 
-            <!-- PREVIEW con imagen real -->
+            <!-- PREVIEW -->
             <div class="carta-preview" id="cartaPreview">
                 <img id="previewImg" class="carta-preview-img" src="" alt="" style="display:none;"/>
-                <span id="previewEmoji" class="carta-preview-emoji" style="display:none;">🃏</span>
+                <span id="previewEmoji" class="carta-preview-emoji" style="display:none;"></span>
                 <div class="carta-preview-info">
-                    <div class="nombre" id="previewNombre">—</div>
-                    <div class="rareza" id="previewRareza">—</div>
+                    <div class="nombre" id="previewNombre"></div>
+                    <div class="rareza" id="previewRareza"></div>
                 </div>
             </div>
 
+            <!-- TIPO -->
             <div class="form-group">
                 <label>Tipo de anuncio</label>
                 <div class="tipo-toggle">
@@ -218,8 +159,7 @@
 
             <div class="form-group" id="grupoPrecio">
                 <label>Precio (€)</label>
-                <input type="number" name="precio" id="precioInput"
-                       placeholder="Ej: 4.99" min="0" step="0.01">
+                <input type="number" name="precio" id="precioInput" placeholder="Ej: 4.99" min="0" step="0.01">
             </div>
 
             <div class="form-group">
@@ -229,7 +169,7 @@
 
             <div class="form-footer">
                 <a th:href="@{/web/mercado}" class="btn-cancelar">Cancelar</a>
-                <button type="submit" class="btn-publicar">🚀 Publicar anuncio</button>
+                <button type="submit" class="btn-publicar" id="btnPublicar" disabled>🚀 Publicar anuncio</button>
             </div>
         </form>
     </div>
@@ -237,6 +177,85 @@
 
 <script>
     const RAREZA_EMOJI = { COMUN:'⚪', POCO_COMUN:'🟢', RARA:'🔵', ULTRA_RARA:'🟡', SECRETA:'🟣', RAINBOW:'🌈' };
+    let debounceTimer = null;
+
+    document.getElementById('buscadorCarta').addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        const q = this.value.trim();
+        if (q.length < 2) { cerrarResultados(); return; }
+        debounceTimer = setTimeout(() => buscarCartas(q), 300);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.search-wrap')) cerrarResultados();
+    });
+
+    async function buscarCartas(q) {
+        document.getElementById('searchSpinner').style.display = 'block';
+        try {
+            const res = await fetch(`/api/cartas/buscar?nombre=${encodeURIComponent(q)}`);
+            const cartas = await res.json();
+            mostrarResultados(cartas);
+        } catch {
+            cerrarResultados();
+        } finally {
+            document.getElementById('searchSpinner').style.display = 'none';
+        }
+    }
+
+    function mostrarResultados(cartas) {
+        const box = document.getElementById('searchResults');
+        if (!cartas.length) {
+            box.innerHTML = '<div class="search-no-results">Sin resultados</div>';
+            box.style.display = 'block';
+            return;
+        }
+        box.innerHTML = cartas.map(c => {
+            const rareza = c.rareza || 'COMUN';
+            const thumb  = c.imagenUrl
+                ? `<img src="${c.imagenUrl}" alt="${c.nombre}">`
+                : `<div class="search-item-emoji">${RAREZA_EMOJI[rareza] || '🃏'}</div>`;
+            return `<div class="search-item" onclick="seleccionarCarta(${c.id}, '${escHtml(c.nombre)}', '${rareza}', '${escHtml(c.imagenUrl || '')}', '${escHtml(c.setCodigo || '')}')">
+                ${thumb}
+                <div class="search-item-info">
+                    <div class="search-item-name">${escHtml(c.nombre)}</div>
+                    <div class="search-item-meta">${c.setCodigo || ''} · ${rareza.replace('_',' ')}</div>
+                </div>
+            </div>`;
+        }).join('');
+        box.style.display = 'block';
+    }
+
+    function seleccionarCarta(id, nombre, rareza, imagenUrl, setCodigo) {
+        document.getElementById('cartaIdInput').value = id;
+        document.getElementById('buscadorCarta').value = nombre;
+        cerrarResultados();
+
+        // preview
+        const img   = document.getElementById('previewImg');
+        const emoji = document.getElementById('previewEmoji');
+        if (imagenUrl) {
+            img.src = imagenUrl; img.alt = nombre;
+            img.style.display   = 'block';
+            emoji.style.display = 'none';
+        } else {
+            img.style.display   = 'none';
+            emoji.textContent   = RAREZA_EMOJI[rareza] || '🃏';
+            emoji.style.display = 'block';
+        }
+        document.getElementById('previewNombre').textContent = nombre;
+        document.getElementById('previewRareza').textContent = rareza.replace('_',' ') + (setCodigo ? ' · ' + setCodigo : '');
+        document.getElementById('cartaPreview').style.display = 'block';
+        document.getElementById('btnPublicar').disabled = false;
+    }
+
+    function cerrarResultados() {
+        document.getElementById('searchResults').style.display = 'none';
+    }
+
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
     function setTipo(tipo) {
         document.getElementById('tipoInput').value = tipo;
@@ -246,40 +265,12 @@
         if (tipo === 'TRUEQUE') document.getElementById('precioInput').value = '';
     }
 
-    function actualizarPreview() {
-        const sel = document.getElementById('cartaSelect');
-        if (!sel) return;
-        const opt     = sel.options[sel.selectedIndex];
-        const preview = document.getElementById('cartaPreview');
-        if (!opt || !opt.value) { preview.style.display = 'none'; return; }
-
-        const rareza = opt.getAttribute('data-rareza') || 'COMUN';
-        const nombre = opt.getAttribute('data-nombre') || opt.text;
-        const imagen = opt.getAttribute('data-imagen') || '';
-
-        const img   = document.getElementById('previewImg');
-        const emoji = document.getElementById('previewEmoji');
-
-        if (imagen && imagen !== 'null' && imagen.trim() !== '') {
-            img.src = imagen;
-            img.alt = nombre;
-            img.style.display   = 'block';
-            emoji.style.display = 'none';
-        } else {
-            img.style.display   = 'none';
-            emoji.textContent   = RAREZA_EMOJI[rareza] || '🃏';
-            emoji.style.display = 'block';
+    document.getElementById('formVenta').addEventListener('submit', function(e) {
+        if (!document.getElementById('cartaIdInput').value) {
+            e.preventDefault();
+            alert('Selecciona una carta primero.');
         }
-
-        document.getElementById('previewNombre').textContent = nombre;
-        document.getElementById('previewRareza').textContent = rareza.replace('_', ' ');
-        preview.style.display = 'block';
-    }
-
-    function irAMazo(sel) {
-        const mazoId = sel.value;
-        window.location.href = '/web/venta/nueva?fuente=mazo' + (mazoId ? '&mazoId=' + mazoId : '');
-    }
+    });
 </script>
 </body>
 </html>
