@@ -347,11 +347,89 @@
     document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
 
     function formatFecha(f) { if(!f) return '—'; return new Date(f).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}); }
-    function esc(str) { return (str||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+    function esc(str) { return (str||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
     function mostrarToast(msg, tipo='exito') {
         const t = document.getElementById('toast');
         t.textContent = msg; t.className = `toast ${tipo} visible`;
         setTimeout(() => t.classList.remove('visible'), 3000);
+    }
+
+    /* ── BÚSQUEDA DE CARTA EN MODAL CREAR MAZO ── */
+    let cartaSeleccionadaMazoObj = null;
+    let timerMazo = null;
+    const inputMazo    = document.getElementById('inputBuscaMazo');
+    const dropdownMazo = document.getElementById('dropdownMazo');
+
+    inputMazo.addEventListener('input', () => {
+        clearTimeout(timerMazo);
+        const q = inputMazo.value.trim();
+        if (q.length < 2) { dropdownMazo.style.display = 'none'; dropdownMazo.innerHTML = ''; return; }
+        timerMazo = setTimeout(() => buscarParaMazo(q), 350);
+    });
+
+    document.addEventListener('click', e => {
+        if (!inputMazo.contains(e.target) && !dropdownMazo.contains(e.target)) {
+            dropdownMazo.style.display = 'none';
+        }
+    });
+
+    async function buscarParaMazo(q) {
+        dropdownMazo.innerHTML = '<div style="padding:12px 16px;color:#AAA;font-size:0.85rem;">Buscando...</div>';
+        dropdownMazo.style.display = 'block';
+        try {
+            const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=10`);
+            const data = await res.json();
+            const cartas = data.data || [];
+            if (!cartas.length) {
+                dropdownMazo.innerHTML = '<div style="padding:12px 16px;color:#AAA;font-size:0.85rem;">Sin resultados</div>';
+                return;
+            }
+            dropdownMazo.innerHTML = cartas.map(c => {
+                const img = c.images?.small || '';
+                return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F0F0;transition:background 0.15s;"
+                             onmouseover="this.style.background='#F0F8FF'" onmouseout="this.style.background=''"
+                             onclick="seleccionarParaMazo('${esc(c.id)}','${esc(c.name)}','${esc(c.rarity||'COMUN')}','${esc(c.set?.id||'')}','${esc(img)}')">
+                    ${img
+                        ? `<img src="${img}" alt="${c.name}" style="width:36px;height:50px;object-fit:contain;border-radius:5px;flex-shrink:0;" loading="lazy">`
+                        : `<span style="font-size:1.4rem;width:36px;text-align:center;flex-shrink:0;">🃏</span>`}
+                    <div>
+                        <div style="font-weight:bold;font-size:0.88rem;color:#333;">${c.name}</div>
+                        <div style="font-size:0.75rem;color:#AAA;margin-top:2px;">${c.rarity||''} · ${c.set?.name||''}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch {
+            dropdownMazo.innerHTML = '<div style="padding:12px 16px;color:#E63946;font-size:0.85rem;">Error al buscar</div>';
+        }
+    }
+
+    function seleccionarParaMazo(id, nombre, rareza, setCodigo, imagenUrl) {
+        cartaSeleccionadaMazoObj = { id, nombre, rareza, setCodigo, imagenUrl };
+        inputMazo.value = nombre;
+        dropdownMazo.style.display = 'none';
+        dropdownMazo.innerHTML = '';
+        const emojiEl = document.getElementById('selEmojiMazo');
+        if (imagenUrl) {
+            emojiEl.outerHTML = `<img id="selEmojiMazo" src="${imagenUrl}" alt="${nombre}" style="width:44px;height:60px;object-fit:contain;border-radius:6px;flex-shrink:0;">`;
+        } else {
+            emojiEl.textContent = '🃏';
+        }
+        document.getElementById('selNombreMazo').textContent = nombre;
+        document.getElementById('selRarezaMazo').textContent = rareza.replace('_', ' ');
+        document.getElementById('cartaSeleccionadaMazo').style.display = 'flex';
+    }
+
+    function limpiarMazo() {
+        cartaSeleccionadaMazoObj = null;
+        inputMazo.value = '';
+        dropdownMazo.style.display = 'none';
+        const emojiEl = document.getElementById('selEmojiMazo');
+        if (emojiEl.tagName === 'IMG') {
+            emojiEl.outerHTML = `<span id="selEmojiMazo" style="font-size:1.5rem;">🃏</span>`;
+        } else {
+            emojiEl.textContent = '🃏';
+        }
+        document.getElementById('cartaSeleccionadaMazo').style.display = 'none';
     }
 
     cargarMazos();

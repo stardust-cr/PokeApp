@@ -179,6 +179,11 @@ public void eliminarDeDeseosPorId(Long itemId) {
         r.setTipo(venta.getTipo());
         r.setEstado(venta.getEstado());
         r.setFecha(venta.getFecha());
+        r.setCartaId(venta.getCarta().getId());
+r.setCartaNombre(venta.getCarta().getNombre());
+r.setCartaRareza(venta.getCarta().getRareza() != null ? venta.getCarta().getRareza().name() : null); // NUEVO
+r.setCartaSet(venta.getCarta().getSetCodigo());                                                       // NUEVO
+r.setCartaImagenUrl(venta.getCarta().getImagenUrl());                                                 // NUEVO
         return r;
     }
 }

@@ -299,8 +299,10 @@
             const esTrueque = v.tipo === 'TRUEQUE';
             return `
             <div class="carta-card">
-                <div class="carta-banner">
-                    ${emoji}
+                <div class="carta-banner" style="${v.cartaImagenUrl ? 'background:#fafafa;padding:0;' : ''}">
+                    ${v.cartaImagenUrl
+                        ? `<img src="${v.cartaImagenUrl}" alt="${v.cartaNombre||''}" style="width:100%;height:100%;object-fit:contain;display:block;" loading="lazy">`
+                        : emoji}
                     <span class="rareza-badge rareza-${v.cartaRareza || 'COMUN'}">${(v.cartaRareza||'COMUN').replace('_',' ')}</span>
                 </div>
                 <div class="carta-body">

@@ -33,7 +33,12 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return RUTAS_PUBLICAS.stream().anyMatch(path::equals);
+        // Rutas exactas públicas
+        if (RUTAS_PUBLICAS.stream().anyMatch(path::equals)) return true;
+        // Las rutas de perfil usan autenticación por sesión (no JWT Bearer),
+        // así que dejamos que el filtro de sesión de Spring Security las gestione
+        if (path.startsWith("/web/perfil")) return true;
+        return false;
     }
 
     @Override

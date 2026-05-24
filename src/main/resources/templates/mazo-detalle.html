@@ -204,7 +204,9 @@
             const emoji  = RAREZA_EMOJI[rareza] || '🃏';
             const bannerClass = 'carta-banner-' + rareza;
             return `<div class="carta-card" id="cc-${c.cartaId}">
-                <div class="carta-banner ${bannerClass}">${emoji}</div>
+                ${c.imagenUrl
+                    ? `<img src="${c.imagenUrl}" alt="${c.cartaNombre||''}" style="width:100%;height:160px;object-fit:contain;background:#fafafa;display:block;" loading="lazy">`
+                    : `<div class="carta-banner ${bannerClass}">${emoji}</div>`}
                 <div class="carta-body">
                     <div class="carta-nombre">${c.cartaNombre || 'Carta #' + c.cartaId}</div>
                     <div class="carta-rareza">${rareza.replace('_',' ')}</div>
@@ -242,8 +244,11 @@
         if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados</div>'; return; }
         dropdown.innerHTML = cartas.map(c => {
             const rareza = c.rarity || 'COMUN';
-            return `<div class="drop-item" onclick="seleccionar(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(c.images?.small||'')}')">
-                <div class="drop-emoji">🃏</div>
+            const img = c.images?.small || '';
+            return `<div class="drop-item" onclick="seleccionar(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(img)}')">
+                ${img
+                    ? `<img src="${img}" alt="${c.name}" style="width:36px;height:50px;object-fit:contain;border-radius:5px;flex-shrink:0;" loading="lazy">`
+                    : `<div class="drop-emoji">🃏</div>`}
                 <div>
                     <div class="drop-nombre">${c.name}</div>
                     <div class="drop-sub">${rareza} · ${c.set?.name||''}</div>

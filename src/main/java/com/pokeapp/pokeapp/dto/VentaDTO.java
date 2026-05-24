@@ -36,6 +36,9 @@ public class VentaDTO {
         private String compradorNombre;
         private Long cartaId;
         private String cartaNombre;
+        private String cartaRareza;
+        private String cartaSet;
+        private String cartaImagenUrl;
         private BigDecimal precio;
         private Venta.TipoVenta tipo;
         private Venta.EstadoVenta estado;
@@ -56,6 +59,12 @@ public class VentaDTO {
         public void setCartaId(Long cartaId) { this.cartaId = cartaId; }
         public String getCartaNombre() { return cartaNombre; }
         public void setCartaNombre(String cartaNombre) { this.cartaNombre = cartaNombre; }
+        public String getCartaRareza() { return cartaRareza; }
+        public void setCartaRareza(String cartaRareza) { this.cartaRareza = cartaRareza; }
+        public String getCartaSet() { return cartaSet; }
+        public void setCartaSet(String cartaSet) { this.cartaSet = cartaSet; }
+        public String getCartaImagenUrl() { return cartaImagenUrl; }
+        public void setCartaImagenUrl(String cartaImagenUrl) { this.cartaImagenUrl = cartaImagenUrl; }
         public BigDecimal getPrecio() { return precio; }
         public void setPrecio(BigDecimal precio) { this.precio = precio; }
         public Venta.TipoVenta getTipo() { return tipo; }
@@ -64,8 +73,6 @@ public class VentaDTO {
         public void setEstado(Venta.EstadoVenta estado) { this.estado = estado; }
         public LocalDateTime getFecha() { return fecha; }
         public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
-
-        
     }
 
     public static class ValorarRequest {
