@@ -15,6 +15,8 @@ public interface ColeccionCartaRepository extends JpaRepository<ColeccionCarta, 
 
     void deleteByColeccionIdAndCartaId(Long coleccionId, Long cartaId);
 
+    void deleteByColeccionId(Long coleccionId);
+
     void deleteByCartaId(Long cartaId);
 
     // Todas las cartas distintas que un usuario tiene en cualquier colección

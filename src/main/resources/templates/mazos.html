@@ -308,18 +308,48 @@
 
     function abrirModalCrear() {
         document.getElementById('crearNombre').value = '';
+        limpiarMazo();
         document.getElementById('overlayCrear').classList.add('open');
         setTimeout(() => document.getElementById('crearNombre').focus(), 100);
     }
 
     async function crearMazo() {
         const nombre = document.getElementById('crearNombre').value.trim();
-        if (!nombre) return toast('El nombre es obligatorio', false);
+        if (!nombre) return mostrarToast('El nombre es obligatorio', 'error');
         try {
             const res = await fetch(`${API}/${USUARIO_ID}?nombre=${encodeURIComponent(nombre)}`, { method:'POST' });
-            if (res.ok) { mostrarToast('Mazo creado ✓','exito'); cerrar('overlayCrear'); cargarMazos(); }
-            else { const e = await res.json().catch(()=>{}); mostrarToast(e?.mensaje || 'Error al crear','error'); }
-        } catch { mostrarToast('Error de conexión','error'); }
+            if (!res.ok) {
+                const e = await res.json().catch(()=>{});
+                return mostrarToast(e?.mensaje || 'Error al crear', 'error');
+            }
+            const mazo = await res.json();
+
+            // Si el usuario seleccionó una carta, añadirla al mazo recién creado
+            if (cartaSeleccionadaMazoObj) {
+                try {
+                    // Primero importar/obtener el id local de la carta
+                    const importRes = await fetch('/api/cartas/importar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nombre: cartaSeleccionadaMazoObj.nombre,
+                            setCodigo: cartaSeleccionadaMazoObj.setCodigo,
+                            rareza: cartaSeleccionadaMazoObj.rareza || 'COMUN',
+                            imagenUrl: cartaSeleccionadaMazoObj.imagenUrl
+                        })
+                    });
+                    if (importRes.ok) {
+                        const carta = await importRes.json();
+                        await fetch(`${API}/${mazo.id}/cartas?cartaId=${carta.id}&cantidad=1`, { method: 'POST' });
+                    }
+                } catch { /* no bloquear si falla la carta */ }
+            }
+
+            mostrarToast('Mazo creado ✓', 'exito');
+            cerrar('overlayCrear');
+            limpiarMazo();
+            cargarMazos();
+        } catch { mostrarToast('Error de conexión', 'error'); }
     }
 
     function pedirEliminar(id, nombre) {

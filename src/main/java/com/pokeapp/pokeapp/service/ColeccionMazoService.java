@@ -8,6 +8,7 @@ import com.pokeapp.pokeapp.model.Mazos_Cartas;
 import com.pokeapp.pokeapp.model.Mazos_CartasId;
 import com.pokeapp.pokeapp.model.User;
 import com.pokeapp.pokeapp.repository.CartaRepository;
+import com.pokeapp.pokeapp.repository.ColeccionCartaRepository;
 import com.pokeapp.pokeapp.repository.ColeccionRepository;
 import com.pokeapp.pokeapp.repository.MazoCartaRepository;
 import com.pokeapp.pokeapp.repository.MazoRepository;
@@ -30,6 +31,7 @@ public class ColeccionMazoService {
     private final MazoCartaRepository mazoCartaRepository;
     private final CartaRepository cartaRepository;
     private final ColeccionRepository coleccionRepository;
+    private final ColeccionCartaRepository coleccionCartaRepository;
     private final UserRepository userRepository;
     private final EntityManager entityManager;
 
@@ -37,12 +39,14 @@ public class ColeccionMazoService {
                                 MazoCartaRepository mazoCartaRepository,
                                 CartaRepository cartaRepository,
                                 ColeccionRepository coleccionRepository,
+                                ColeccionCartaRepository coleccionCartaRepository,
                                 UserRepository userRepository,
                                 EntityManager entityManager) {
         this.mazoRepository = mazoRepository;
         this.mazoCartaRepository = mazoCartaRepository;
         this.cartaRepository = cartaRepository;
         this.coleccionRepository = coleccionRepository;
+        this.coleccionCartaRepository = coleccionCartaRepository;
         this.userRepository = userRepository;
         this.entityManager = entityManager;
     }
@@ -134,6 +138,8 @@ public class ColeccionMazoService {
         if (!coleccionRepository.existsById(coleccionId)) {
             throw new IllegalArgumentException("Colección no encontrada");
         }
+        // Borrar primero las cartas de la colección para evitar FK violation
+        coleccionCartaRepository.deleteByColeccionId(coleccionId);
         coleccionRepository.deleteById(coleccionId);
     }
 

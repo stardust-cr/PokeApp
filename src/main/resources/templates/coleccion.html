@@ -306,6 +306,27 @@
         </div>
     </div>
 </div>
+<!-- Modal VER cartas de una colección -->
+<div class="overlay" id="overlayVerCartas">
+    <div class="modal" style="max-width:600px;max-height:85vh;display:flex;flex-direction:column;">
+        <button class="cerrar" onclick="cerrar('overlayVerCartas')">✕</button>
+        <h2>📚 <span id="verCartasNombre" style="color:#E63946;"></span></h2>
+
+        <div id="verCartasCargando" style="text-align:center;color:#BBB;padding:20px;font-size:0.9rem;">Cargando...</div>
+
+        <div id="verCartasVacio" style="display:none;text-align:center;color:#CCC;padding:30px;">
+            <div style="font-size:2.5rem;margin-bottom:8px;">🃏</div>
+            <p style="font-size:0.95rem;">Esta colección está vacía</p>
+        </div>
+
+        <div id="verCartasLista" style="overflow-y:auto;flex:1;display:none;gap:10px;flex-direction:column;margin-top:8px;padding-right:4px;"></div>
+
+        <div class="modal-footer" style="margin-top:14px;">
+            <button class="btn-cancelar" onclick="cerrar('overlayVerCartas')">Cerrar</button>
+            <button class="btn-ok" id="btnAñadirDesdeVer" onclick="abrirAñadirDesdeVer()">➕ Añadir carta</button>
+        </div>
+    </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -425,9 +446,12 @@ function renderGrid(colecciones) {
                 <div class="coleccion-fecha">📅 ${formatFecha(c.creadaEn)}</div>
                 <div class="coleccion-id" id="count-${c.id}">Cargando cartas...</div>
             </div>
-            <div class="coleccion-footer" style="display:flex;gap:8px;">
+            <div class="coleccion-footer" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-eliminar" style="flex:1;background:#4ECDC4;box-shadow:0 4px 0 #38B2AC;" onclick="verCartas(${c.id}, '${esc(c.nombre)}')">
+                    👁 Ver cartas
+                </button>
                 <button class="btn-eliminar" style="flex:1;" onclick="abrirAñadirCarta(${c.id}, '${esc(c.nombre)}')">
-                    ➕ Añadir carta
+                    ➕ Añadir
                 </button>
                 <button class="btn-eliminar" onclick="pedirEliminar(${c.id}, '${esc(c.nombre)}')">
                     🗑
@@ -530,6 +554,10 @@ async function confirmarAñadirCarta() {
             toast('Carta añadida ✓', true);
             cerrar('overlayAñadirCarta');
             cargarConteoCartas(coleccionActualId);
+            // Si veníamos del modal "ver cartas", volvemos a él recargado
+            if (verCartasColeccionId === coleccionActualId) {
+                setTimeout(() => verCartas(coleccionActualId, verCartasColeccionNombre), 300);
+            }
         } else {
             const err = await res.json().catch(() => ({}));
             toast(err?.mensaje || 'Error al añadir', false);
@@ -592,6 +620,104 @@ function toast(msg, ok=true) {
 }
 
 window.addEventListener('load', () => { if (document.getElementById('userId').value) cargarColecciones(); });
+
+/* ── VER CARTAS DE UNA COLECCIÓN ── */
+let verCartasColeccionId = null;
+let verCartasColeccionNombre = null;
+
+async function verCartas(coleccionId, nombre) {
+    verCartasColeccionId = coleccionId;
+    verCartasColeccionNombre = nombre;
+    document.getElementById('verCartasNombre').textContent = nombre;
+    document.getElementById('verCartasCargando').style.display = 'block';
+    document.getElementById('verCartasVacio').style.display = 'none';
+    document.getElementById('verCartasLista').style.display = 'none';
+    document.getElementById('overlayVerCartas').classList.add('open');
+    try {
+        const res = await fetch(`${API}/colecciones/${coleccionId}/cartas`);
+        if (!res.ok) throw new Error();
+        const items = await res.json();
+        document.getElementById('verCartasCargando').style.display = 'none';
+        if (!items.length) {
+            document.getElementById('verCartasVacio').style.display = 'block';
+        } else {
+            renderListaCartas(items, coleccionId);
+        }
+    } catch {
+        document.getElementById('verCartasCargando').style.display = 'none';
+        toast('Error al cargar las cartas', false);
+    }
+}
+
+function renderListaCartas(items, coleccionId) {
+    const lista = document.getElementById('verCartasLista');
+    lista.style.display = 'flex';
+    const RAREZA_COLOR = {
+        'COMUN': '#888', 'POCO_COMUN': '#4ECDC4', 'RARA': '#3B82F6',
+        'ULTRA_RARA': '#8B5CF6', 'SECRETA': '#F59E0B', 'RAINBOW': '#E63946'
+    };
+    lista.innerHTML = items.map(item => {
+        const c = item.carta || {};
+        const nombre = c.nombre || '—';
+        const rareza = c.rareza || '';
+        const img    = c.imagenUrl || '';
+        const cant   = item.cantidad || 1;
+        const color  = RAREZA_COLOR[rareza] || '#AAA';
+        return `
+        <div style="display:flex;align-items:center;gap:14px;background:#FAFAFA;border:2px solid #EEE;
+                    border-radius:14px;padding:12px 14px;transition:box-shadow 0.2s;"
+             onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'"
+             onmouseout="this.style.boxShadow=''">
+            ${img
+                ? `<img src="${img}" alt="${esc(nombre)}" style="width:48px;height:66px;object-fit:contain;border-radius:6px;background:#fff;flex-shrink:0;">`
+                : `<div style="width:48px;height:66px;background:#F0F0F0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">🃏</div>`
+            }
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:bold;font-size:0.95rem;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(nombre)}</div>
+                <div style="font-size:0.78rem;color:${color};font-weight:bold;margin-top:3px;">${rareza.replace('_',' ')}</div>
+                ${c.setCodigo ? `<div style="font-size:0.75rem;color:#BBB;margin-top:2px;">Set: ${esc(c.setCodigo)}</div>` : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                <div style="background:#FFF0F0;border:2px solid #FFD1D1;border-radius:10px;padding:4px 12px;font-weight:bold;font-size:0.9rem;color:#E63946;">
+                    ×${cant}
+                </div>
+                <button onclick="eliminarCartaDeVista(${coleccionId}, ${c.id}, this)"
+                        title="Eliminar carta"
+                        style="background:#FFF0F0;border:2px solid #FFD1D1;border-radius:10px;padding:5px 10px;
+                               cursor:pointer;font-size:0.9rem;transition:all 0.2s;color:#E63946;"
+                        onmouseover="this.style.background='#E63946';this.style.color='white'"
+                        onmouseout="this.style.background='#FFF0F0';this.style.color='#E63946'">🗑</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function eliminarCartaDeVista(coleccionId, cartaId, btn) {
+    if (!confirm('¿Eliminar esta carta de la colección?')) return;
+    try {
+        const res = await fetch(`${API}/colecciones/${coleccionId}/cartas/${cartaId}`, { method: 'DELETE' });
+        if (res.ok) {
+            toast('Carta eliminada ✓', true);
+            btn.closest('div[style]').remove();
+            cargarConteoCartas(coleccionId);
+            const lista = document.getElementById('verCartasLista');
+            if (!lista.children.length) {
+                lista.style.display = 'none';
+                document.getElementById('verCartasVacio').style.display = 'block';
+            }
+        } else {
+            const err = await res.json().catch(() => ({}));
+            toast(err?.mensaje || 'Error al eliminar', false);
+        }
+    } catch { toast('Error de conexión', false); }
+}
+
+function abrirAñadirDesdeVer() {
+    cerrar('overlayVerCartas');
+    if (verCartasColeccionId) {
+        abrirAñadirCarta(verCartasColeccionId, verCartasColeccionNombre);
+    }
+}
 </script>
 </body>
 </html>
