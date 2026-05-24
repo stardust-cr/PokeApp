@@ -43,14 +43,19 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
-                "/web/login", "/web/register", "/web/",
+                "/web/login", "/web/register", "/web/", "/web/signup",
                 "/api/auth/**", "/web/verificar-email",
                 "/web/reenviar-codigo", "/web/check-email",
                 "/web/logout", "/css/**", "/js/**",
-                "/images/**", "/webjars/**", "/favicon.ico", "/test-hash"
+                "/images/**", "/webjars/**", "/favicon.ico", "/test-hash",
+                "/error"                          // ← AÑADIDO
             ).permitAll()
             .requestMatchers("/web/admin", "/web/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
+        )
+        .exceptionHandling(ex -> ex            // ← AÑADIDO
+            .authenticationEntryPoint((req, res, e) ->
+                res.sendRedirect("/web/login"))
         )
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
