@@ -59,6 +59,13 @@ public class ColeccionMazoService {
         return mazoRepository.findByEsPublicoTrue();
     }
 
+    public List<Mazos> buscarMazosPublicos(String q) {
+        if (q == null || q.isBlank()) {
+            return obtenerMazosPublicos();
+        }
+        return mazoRepository.findByEsPublicoTrueAndNombreContainingIgnoreCase(q);
+    }
+
     public Mazos crearMazo(Long usuarioId, String nombre, String descripcion, boolean esPublico) {
         User usuario = userRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
@@ -116,6 +123,21 @@ public class ColeccionMazoService {
                 .orElseThrow(() -> new IllegalArgumentException("Mazo no encontrado"));
         mazo.setEsPublico(esPublico);
         mazoRepository.save(mazo);
+    }
+
+    public Mazos renombrarMazo(Long mazoId, String nombre, String descripcion, Boolean esPublico) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+        Mazos mazo = mazoRepository.findById(mazoId)
+                .orElseThrow(() -> new IllegalArgumentException("Mazo no encontrado"));
+        mazo.setNombre(nombre);
+        // actualizar descripción aunque sea cadena vacía
+        mazo.setDescripcion(descripcion != null ? descripcion : "");
+        if (esPublico != null) {
+            mazo.setEsPublico(esPublico);
+        }
+        return mazoRepository.save(mazo);
     }
 
     public List<Coleccion> obtenerColeccionesUsuario(Long usuarioId) {

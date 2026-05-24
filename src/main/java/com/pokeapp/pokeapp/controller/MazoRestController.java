@@ -34,6 +34,28 @@ public class MazoRestController {
         return ResponseEntity.ok(mazos.stream().map(this::toResponse).toList());
     }
 
+    // ── GET /api/mazos/buscar?q=nombre ────────────────────────────────────────
+    @GetMapping("/buscar")
+    public ResponseEntity<List<MazoDTO.Response>> buscarMazos(@RequestParam String q) {
+        List<Mazos> mazos = service.buscarMazosPublicos(q);
+        return ResponseEntity.ok(mazos.stream().map(this::toResponse).toList());
+    }
+
+    // ── PATCH /api/mazos/{mazoId}/renombrar ───────────────────────────────────
+    @PatchMapping("/{mazoId}/renombrar")
+    public ResponseEntity<?> renombrarMazo(
+            @PathVariable Long mazoId,
+            @RequestParam String nombre,
+            @RequestParam(required = false, defaultValue = "") String descripcion,
+            @RequestParam(required = false) Boolean esPublico) {
+        try {
+            Mazos mazo = service.renombrarMazo(mazoId, nombre, descripcion, esPublico);
+            return ResponseEntity.ok(toResponse(mazo));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+        }
+    }
+
     // ── POST /api/mazos/{userId}?nombre=...&descripcion=...&esPublico=false ──
     @PostMapping("/{userId}")
     public ResponseEntity<?> crearMazo(
@@ -134,3 +156,4 @@ public class MazoRestController {
         return response;
     }
 }
+

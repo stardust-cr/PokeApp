@@ -360,6 +360,72 @@
     } catch { mostrarToast('Error de red', 'error'); }
 }
 
+    // ── TRUEQUE ─────────────────────────────────────────────────────────────
+    let ventaTruequeActiva = null;
+
+    async function proponerTrueque(ventaId) {
+        ventaTruequeActiva = ventaId;
+        // Cargar cartas del usuario para ofrecer
+        const grid = document.getElementById('gridCartasOfrecer');
+        grid.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">⏳ Cargando tus cartas...</div>';
+        document.getElementById('overlayTrueque').classList.add('open');
+        document.getElementById('inpMensajeTrueque').value = '';
+        cartaOfrecer = null;
+        try {
+            const res = await fetch(`/api/colecciones/usuario/${USUARIO_ID}/cartas`);
+            let cartas = [];
+            if (res.ok) cartas = await res.json();
+            if (!cartas.length) {
+                grid.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">No tienes cartas en tus colecciones para ofrecer</div>';
+                return;
+            }
+            grid.innerHTML = cartas.map(c => `
+                <div class="carta-ofrecer" id="co-${c.id}" onclick="selCartaOfrecer(${c.id},'${escJ(c.nombre)}')">
+                    ${c.imagenUrl ? `<img src="${c.imagenUrl}" alt="${c.nombre}" style="width:100%;height:100px;object-fit:contain;background:#fafafa;display:block;border-radius:10px 10px 0 0;">` : `<div style="height:100px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#F5F5F5;border-radius:10px 10px 0 0;">🃏</div>`}
+                    <div style="padding:8px 10px;font-size:0.8rem;font-weight:bold;color:#333">${escH(c.nombre)}</div>
+                </div>
+            `).join('');
+        } catch {
+            grid.innerHTML = '<div style="text-align:center;color:#AAA;padding:20px">Error al cargar cartas</div>';
+        }
+    }
+
+    let cartaOfrecer = null;
+    function selCartaOfrecer(id, nombre) {
+        cartaOfrecer = id;
+        document.querySelectorAll('.carta-ofrecer').forEach(el => el.classList.remove('seleccionada'));
+        const el = document.getElementById('co-' + id);
+        if (el) el.classList.add('seleccionada');
+        document.getElementById('cartaSelLabel').textContent = nombre;
+    }
+
+    async function confirmarTrueque() {
+        if (!cartaOfrecer) return mostrarToast('Selecciona una carta para ofrecer', 'error');
+        const mensaje = document.getElementById('inpMensajeTrueque').value.trim();
+        try {
+            const res = await fetch('/api/trueques/proponer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ventaId: ventaTruequeActiva,
+                    proponenteId: USUARIO_ID,
+                    cartaOfrecidaId: cartaOfrecer,
+                    mensaje: mensaje || null
+                })
+            });
+            if (res.ok) {
+                mostrarToast('¡Propuesta enviada! El vendedor recibirá tu oferta 🔄', 'exito');
+                cerrarOverlay('overlayTrueque');
+            } else {
+                const e = await res.json().catch(()=>{});
+                mostrarToast(e?.mensaje || 'Error al enviar propuesta', 'error');
+            }
+        } catch { mostrarToast('Error de red', 'error'); }
+    }
+
+    function cerrarOverlay(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.overlay-trueque').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+
     async function addWishlist(cartaId) {
         try {
             const res = await fetch(`/api/wishlist`, {
@@ -376,6 +442,8 @@
         t.textContent = msg; t.className = `toast ${tipo} visible`;
         setTimeout(() => t.classList.remove('visible'), 3000);
     }
+    function escH(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escJ(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
     document.getElementById('filtroBusqueda').addEventListener('input', aplicarFiltros);
     document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
@@ -383,5 +451,54 @@
 
     cargarMercado();
 </script>
+
+<!-- ── MODAL PROPONER TRUEQUE ─────────────────────────────────────────── -->
+<div class="overlay-trueque" id="overlayTrueque" style="
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center;
+    z-index:200; backdrop-filter:blur(3px);">
+    <div style="
+        background:white; padding:28px; border-radius:26px; width:90%; max-width:520px;
+        border:4px solid #E9D5FF; box-shadow:0 10px 0 #D8B4FE; position:relative;
+        max-height:90vh; overflow-y:auto;
+        animation: fadeInUp 0.25s ease-out;">
+        <button onclick="cerrarOverlay('overlayTrueque')" style="
+            position:absolute; top:14px; right:14px; background:#F0F0F0; border:none;
+            width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:0.9rem; color:#888;">✕</button>
+
+        <h2 style="font-size:1.1rem; color:#333; margin-bottom:6px;">🔄 Proponer trueque</h2>
+        <p style="font-size:0.82rem; color:#AAA; margin-bottom:18px;">Elige una de tus cartas para ofrecer a cambio</p>
+
+        <div id="cartaSelLabel" style="
+            background:#F3E5F5; color:#6A1B9A; border:2px solid #CE93D8;
+            border-radius:10px; padding:9px 14px; font-size:0.85rem; font-weight:bold;
+            margin-bottom:14px; min-height:38px;">
+            Ninguna carta seleccionada
+        </div>
+
+        <div id="gridCartasOfrecer" style="
+            display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr));
+            gap:10px; max-height:260px; overflow-y:auto; margin-bottom:16px;">
+        </div>
+
+        <label style="display:block; font-size:0.78rem; color:#888; font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Mensaje (opcional)</label>
+        <textarea id="inpMensajeTrueque" placeholder="Ej: ¡Me interesa mucho esta carta! Ofrezco la mía en perfecto estado."
+            style="width:100%; padding:10px 12px; border:2px solid #EEE; border-radius:12px; font-size:0.88rem; min-height:70px; resize:vertical; outline:none; font-family:inherit; margin-bottom:16px;"></textarea>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button onclick="cerrarOverlay('overlayTrueque')" style="background:#F0F0F0; color:#666; border:none; border-radius:12px; padding:10px 16px; font-weight:bold; cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarTrueque()" style="background:#8E24AA; color:white; border:none; border-radius:12px; padding:10px 22px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #6A1B9A;">📨 Enviar propuesta</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .overlay-trueque.open { display:flex !important; }
+    .carta-ofrecer { border:2px solid #EEE; border-radius:12px; cursor:pointer; transition:0.15s; overflow:hidden; }
+    .carta-ofrecer:hover { border-color:#CE93D8; background:#F9F0FF; }
+    .carta-ofrecer.seleccionada { border-color:#8E24AA; background:#F3E5F5; box-shadow:0 0 0 2px #CE93D8; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:none;} }
+</style>
+
 </body>
 </html>

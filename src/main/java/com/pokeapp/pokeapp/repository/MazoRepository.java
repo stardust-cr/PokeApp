@@ -11,6 +11,9 @@ public interface MazoRepository extends JpaRepository<Mazos, Long> {
  
     // Mazos públicos de todos los usuarios
     List<Mazos> findByEsPublicoTrue();
+
+    // Buscar mazos públicos por nombre (contiene, case-insensitive)
+    List<Mazos> findByEsPublicoTrueAndNombreContainingIgnoreCase(String nombre);
  
     // Mazos públicos de un usuario concreto
     List<Mazos> findByUsuarioIdAndEsPublicoTrue(Long usuarioId);

@@ -129,7 +129,29 @@ public String verMazo(@PathVariable Long id, HttpSession session, Model model) {
     String username = (String) session.getAttribute("username");
     if (username == null) return "redirect:/web/login";
     model.addAttribute("mazoId", id);
-    return "mazo-detalle"; // o el template que tengas para ver el detalle
+    return "mazo-detalle";
+}
+
+@GetMapping("/mazos/{id}/editar")
+public String editarMazo(@PathVariable Long id, HttpSession session, Model model) {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    com.pokeapp.pokeapp.model.User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    model.addAttribute("mazoId", id);
+    model.addAttribute("usuarioId", usuario.getId());
+    return "mazo-editar";
+}
+
+@GetMapping("/mazos/buscar")
+public String buscarMazos(HttpSession session, Model model) {
+    String username = (String) session.getAttribute("username");
+    if (username == null) return "redirect:/web/login";
+    com.pokeapp.pokeapp.model.User usuario = userRepository.findByUsername(username).orElse(null);
+    if (usuario == null) return "redirect:/web/login";
+    model.addAttribute("usuarioId", usuario.getId());
+    model.addAttribute("username", username);
+    return "mazos-buscar";
 }
 
 }
