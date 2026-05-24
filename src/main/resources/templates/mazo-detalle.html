@@ -232,24 +232,26 @@
     });
 
     async function buscar(q) {
-        dropdown.innerHTML = '<div class="drop-msg">Buscando...</div>';
-        dropdown.classList.add('open');
-        try {
-            const res    = await fetch(`${API_CARTAS}/buscar?nombre=${encodeURIComponent(q)}`);
-            const cartas = await res.json();
-            if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados</div>'; return; }
-            dropdown.innerHTML = cartas.slice(0,10).map(c => {
-    const emoji = RAREZA_EMOJI[c.rareza] || '🃏';
-    return `<div class="drop-item" onclick="seleccionar(${c.id},'${esc(c.nombre)}','${c.rareza||'COMUN'}','${esc(c.setCodigo||'')}','${esc(c.imagenUrl||'')}')">
-        <div class="drop-emoji">${emoji}</div>
-        <div>
-            <div class="drop-nombre">${c.nombre}</div>
-            <div class="drop-sub">${(c.rareza||'COMUN').replace('_',' ')}${c.setCodigo?' · '+c.setCodigo:''}</div>
-        </div>
-    </div>`;
-}).join('');
-        } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
-    }
+    dropdown.innerHTML = '<div class="drop-msg">Buscando...</div>';
+    dropdown.classList.add('open');
+    try {
+        // Buscar en API externa de TCG directamente
+        const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(q)}&pageSize=10`);
+        const data = await res.json();
+        const cartas = data.data || [];
+        if (!cartas.length) { dropdown.innerHTML = '<div class="drop-msg">Sin resultados</div>'; return; }
+        dropdown.innerHTML = cartas.map(c => {
+            const rareza = c.rarity || 'COMUN';
+            return `<div class="drop-item" onclick="seleccionar(null,'${esc(c.name)}','${esc(rareza)}','${esc(c.set?.id||'')}','${esc(c.images?.small||'')}')">
+                <div class="drop-emoji">🃏</div>
+                <div>
+                    <div class="drop-nombre">${c.name}</div>
+                    <div class="drop-sub">${rareza} · ${c.set?.name||''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch { dropdown.innerHTML = '<div class="drop-msg">Error al buscar</div>'; }
+}
 
     function seleccionar(id, nombre, rareza, setCodigo, imagenUrl) {
     cartaSeleccionada = { id, nombre, rareza, setCodigo, imagenUrl };

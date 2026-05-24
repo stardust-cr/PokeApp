@@ -121,6 +121,7 @@ public class MazoRestController {
 
     // ── Helper: Mazos → MazoDTO.Response ─────────────────────────────────────
     private MazoDTO.Response toResponse(Mazos m) {
+        int numCartas = service.obtenerCartasDeMazo(m.getId()).size();
         MazoDTO.Response response = new MazoDTO.Response();
         response.setId(m.getId());
         response.setUsuarioId(m.getUsuario() != null ? m.getUsuario().getId() : null);
@@ -129,7 +130,7 @@ public class MazoRestController {
         response.setDescripcion(m.getDescripcion());
         response.setEsPublico(m.isEsPublico());
         response.setFechaCreacion(m.getFechaCreacion());
-        response.setTotalCartas(0);
+        response.setTotalCartas(numCartas);
         return response;
     }
 }

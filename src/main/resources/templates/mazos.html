@@ -287,23 +287,23 @@
             </div>`;
             return;
         }
-        grid.innerHTML = mazos.map((m, i) => `
-            <div class="mazo-card" id="mazo-${m.id}">
-                <div class="mazo-banner mazo-banner-${i % BANNERS}">
-                    ${EMOJIS[i % EMOJIS.length]}
-                    <span class="mazo-count-badge">${m.numCartas || 0} cartas</span>
-                </div>
-                <div class="mazo-body">
-                    <div class="mazo-nombre">${m.nombre}</div>
-                    <div class="mazo-fecha">📅 ${formatFecha(m.creadoEn)}</div>
-                </div>
-                <div class="mazo-footer">
-                    <a class="btn-ver-mazo" href="/web/mazos/${m.id}">Ver mazo</a>
-                    <button class="btn-edit-mazo" onclick="editarMazo(${m.id})">✏️</button>
-                    <button class="btn-del-mazo" onclick="pedirEliminar(${m.id}, '${esc(m.nombre)}')">🗑</button>
-                </div>
-            </div>
-        `).join('');
+       grid.innerHTML = mazos.map((m, i) => `
+    <div class="mazo-card" id="mazo-${m.id}">
+        <div class="mazo-banner mazo-banner-${i % BANNERS}">
+            ${EMOJIS[i % EMOJIS.length]}
+            <span class="mazo-count-badge">${m.totalCartas || 0} cartas</span>
+        </div>
+        <div class="mazo-body">
+            <div class="mazo-nombre">${m.nombre}</div>
+            <div class="mazo-fecha">📅 ${m.fechaCreacion ? new Date(m.fechaCreacion).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) : 'Sin fecha'}</div>
+        </div>
+        <div class="mazo-footer">
+            <a class="btn-ver-mazo" href="/web/mazos/${m.id}">Ver mazo</a>
+            <button class="btn-edit-mazo" onclick="editarMazo(${m.id})">✏️</button>
+            <button class="btn-del-mazo" onclick="pedirEliminar(${m.id}, '${esc(m.nombre)}')">🗑</button>
+        </div>
+    </div>
+`).join('');
     }
 
     function abrirModalCrear() {
