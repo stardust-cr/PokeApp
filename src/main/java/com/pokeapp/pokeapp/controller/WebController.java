@@ -85,7 +85,7 @@ public class WebController {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/web/login";
         model.addAttribute("username", username);
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         model.addAttribute("isAdmin", usuario != null && "ADMIN".equals(usuario.getRol()));
         return "home";
     }
@@ -206,13 +206,12 @@ public class WebController {
         return email.substring(0, 2) + "***" + email.substring(at);
     }
 
-    // ── Avatar ──
     @GetMapping("/perfil/avatar")
     @ResponseBody
     public ResponseEntity<byte[]> avatar(HttpSession session) {
         String username = (String) session.getAttribute("username");
         if (username == null) return ResponseEntity.notFound().build();
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         if (usuario == null || usuario.getProfileImage() == null)
             return ResponseEntity.notFound().build();
         byte[] img = usuario.getProfileImage();
@@ -228,12 +227,11 @@ public class WebController {
                 .body(img);
     }
 
-    // ── Perfil ──
     @GetMapping("/perfil")
     public String perfil(HttpSession session, Model model) {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/web/login";
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         if (usuario == null) return "redirect:/web/login";
         model.addAttribute("username", usuario.getUsername());
         model.addAttribute("email", usuario.getEmail());
@@ -260,7 +258,7 @@ public class WebController {
             session.setAttribute("perfilError", "Ese nombre ya está en uso.");
             return "redirect:/web/perfil";
         }
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         if (usuario == null) return "redirect:/web/login";
         usuario.setUsername(nuevoUsername);
         userRepository.save(usuario);
@@ -274,7 +272,7 @@ public class WebController {
                                  HttpSession session) {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/web/login";
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         if (usuario == null) return "redirect:/web/login";
         if (!imagen.isEmpty()) {
             try {
@@ -294,7 +292,7 @@ public class WebController {
                                    HttpSession session) {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/web/login";
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         if (usuario == null) return "redirect:/web/login";
         if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
             session.setAttribute("perfilError", "La contraseña actual es incorrecta.");

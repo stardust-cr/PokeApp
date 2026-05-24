@@ -6,10 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.pokeapp.pokeapp.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    static Optional<User> findByUsername(String username) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByUsername'");
-    }
+    Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     List<User> findByRol(String rol);

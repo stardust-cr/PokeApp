@@ -51,7 +51,7 @@ public class NuzlockeService {
     }
 
     public List<Run> getRunDeUsuario(String username) {
-        User user = UserRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
         return runRepository.findByUsuarioId(user.getId());
     }
@@ -63,7 +63,7 @@ public class NuzlockeService {
 
     @Transactional
     public Run crearRun(String username, Long juegoId) {
-        User user = UserRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
         Juegos juego = juegoRepository.findById(juegoId)
                 .orElseThrow(() -> new RuntimeException("Juego no encontrado: " + juegoId));

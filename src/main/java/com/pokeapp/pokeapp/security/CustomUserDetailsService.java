@@ -20,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = UserRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username) // ✅ CORREGIDO
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         String role = "ADMIN".equals(user.getRol()) ? "ROLE_ADMIN" : "ROLE_USER";

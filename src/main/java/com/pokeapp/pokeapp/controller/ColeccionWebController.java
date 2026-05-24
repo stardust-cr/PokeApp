@@ -39,20 +39,14 @@ public class ColeccionWebController {
     @GetMapping("/wishlist")
     public String wishlist(HttpSession session, Model model) {
         String username = (String) session.getAttribute("username");
-        if (username == null) {
-            return "redirect:/web/login";
-        }
-        User usuario = UserRepository.findByUsername(username).orElse(null);
-        if (usuario == null) {
-            return "redirect:/web/login";
-        }
-
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
         List<Listadeseos> deseos = ventaService.obtenerDeseosUsuario(usuario.getId());
         model.addAttribute("wishlist", deseos);
         model.addAttribute("cartasDisponibles", cartaService.todas());
         model.addAttribute("usuarioId", usuario.getId());
         model.addAttribute("username", username);
-
         return "wishlist";
     }
 
@@ -61,36 +55,24 @@ public class ColeccionWebController {
                                   @RequestParam BigDecimal precioDeseado,
                                   HttpSession session) {
         String username = (String) session.getAttribute("username");
-        if (username == null) {
-            return "redirect:/web/login";
-        }
-        User usuario = UserRepository.findByUsername(username).orElse(null);
-        if (usuario == null) {
-            return "redirect:/web/login";
-        }
-
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
         VentaDTO.DeseoRequest request = new VentaDTO.DeseoRequest();
         request.setUsuarioId(usuario.getId());
         request.setCartaId(cartaId);
         request.setPrecioObjetivo(precioDeseado);
         request.setAlertaActiva(Boolean.TRUE);
-
         ventaService.agregarADeseos(usuario.getId(), request);
         return "redirect:/web/wishlist";
     }
 
     @PostMapping("/wishlist/eliminar")
-    public String eliminarWishlist(@RequestParam Long cartaId,
-                                   HttpSession session) {
+    public String eliminarWishlist(@RequestParam Long cartaId, HttpSession session) {
         String username = (String) session.getAttribute("username");
-        if (username == null) {
-            return "redirect:/web/login";
-        }
-        User usuario = UserRepository.findByUsername(username).orElse(null);
-        if (usuario == null) {
-            return "redirect:/web/login";
-        }
-
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
         ventaService.eliminarDeDeseosPorId(cartaId);
         return "redirect:/web/wishlist";
     }
@@ -100,58 +82,55 @@ public class ColeccionWebController {
         return "coleccion";
     }
 
-  
-
     @GetMapping("/valoraciones")
-public String valoraciones(HttpSession session, Model model) {
-    String username = (String) session.getAttribute("username");
-    if (username == null) return "redirect:/web/login";
-    User usuario = UserRepository.findByUsername(username).orElse(null);
-    if (usuario == null) return "redirect:/web/login";
-    model.addAttribute("vendedorId", usuario.getId());
-    model.addAttribute("usuarioId", usuario.getId());
-    model.addAttribute("username", username);
-    return "valoraciones";
-}
+    public String valoraciones(HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
+        model.addAttribute("vendedorId", usuario.getId());
+        model.addAttribute("usuarioId", usuario.getId());
+        model.addAttribute("username", username);
+        return "valoraciones";
+    }
 
     @GetMapping("/mazos")
-public String mazos(HttpSession session, Model model) {
-    String username = (String) session.getAttribute("username");
-    if (username == null) return "redirect:/web/login";
-    User usuario = UserRepository.findByUsername(username).orElse(null);
-    if (usuario == null) return "redirect:/web/login";
-    model.addAttribute("usuarioId", usuario.getId());
-    return "mazos";
-}
+    public String mazos(HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
+        model.addAttribute("usuarioId", usuario.getId());
+        return "mazos";
+    }
 
-@GetMapping("/mazos/{id}")
-public String verMazo(@PathVariable Long id, HttpSession session, Model model) {
-    String username = (String) session.getAttribute("username");
-    if (username == null) return "redirect:/web/login";
-    model.addAttribute("mazoId", id);
-    return "mazo-detalle";
-}
+    @GetMapping("/mazos/{id}")
+    public String verMazo(@PathVariable Long id, HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) return "redirect:/web/login";
+        model.addAttribute("mazoId", id);
+        return "mazo-detalle";
+    }
 
-@GetMapping("/mazos/{id}/editar")
-public String editarMazo(@PathVariable Long id, HttpSession session, Model model) {
-    String username = (String) session.getAttribute("username");
-    if (username == null) return "redirect:/web/login";
-    com.pokeapp.pokeapp.model.User usuario = UserRepository.findByUsername(username).orElse(null);
-    if (usuario == null) return "redirect:/web/login";
-    model.addAttribute("mazoId", id);
-    model.addAttribute("usuarioId", usuario.getId());
-    return "mazo-editar";
-}
+    @GetMapping("/mazos/{id}/editar")
+    public String editarMazo(@PathVariable Long id, HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
+        model.addAttribute("mazoId", id);
+        model.addAttribute("usuarioId", usuario.getId());
+        return "mazo-editar";
+    }
 
-@GetMapping("/mazos/buscar")
-public String buscarMazos(HttpSession session, Model model) {
-    String username = (String) session.getAttribute("username");
-    if (username == null) return "redirect:/web/login";
-    com.pokeapp.pokeapp.model.User usuario = UserRepository.findByUsername(username).orElse(null);
-    if (usuario == null) return "redirect:/web/login";
-    model.addAttribute("usuarioId", usuario.getId());
-    model.addAttribute("username", username);
-    return "mazos-buscar";
-}
-
+    @GetMapping("/mazos/buscar")
+    public String buscarMazos(HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) return "redirect:/web/login";
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
+        if (usuario == null) return "redirect:/web/login";
+        model.addAttribute("usuarioId", usuario.getId());
+        model.addAttribute("username", username);
+        return "mazos-buscar";
+    }
 }

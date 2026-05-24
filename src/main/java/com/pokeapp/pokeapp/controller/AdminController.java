@@ -55,11 +55,9 @@ public class AdminController {
     private boolean esAdmin(HttpSession session) {
         String username = (String) session.getAttribute("username");
         if (username == null) return false;
-        User user = UserRepository.findByUsername(username).orElse(null);
+        User user = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         return user != null && "ADMIN".equals(user.getRol());
     }
-
-    // ── Panel principal ───────────────────────────────────────
 
     @GetMapping({"/web/admin", "/web/admin/"})
     public String panel(Model model, HttpSession session) {
@@ -74,8 +72,6 @@ public class AdminController {
         model.addAttribute("usuariosMasActivos", adminService.usuariosMasActivos());
         return "admin/panel";
     }
-
-    // ── Usuarios ──────────────────────────────────────────────
 
     @GetMapping("/web/admin/usuarios")
     public String usuarios(Model model, HttpSession session) {
@@ -99,8 +95,6 @@ public class AdminController {
         return "redirect:/web/admin/usuarios";
     }
 
-    // ── Valoraciones ──────────────────────────────────────────
-
     @GetMapping("/web/admin/valoraciones")
     public String valoraciones(Model model, HttpSession session) {
         if (!esAdmin(session)) return "redirect:/web/home";
@@ -116,8 +110,6 @@ public class AdminController {
         return "redirect:/web/admin/valoraciones";
     }
 
-    // ── Ventas ────────────────────────────────────────────────
-
     @GetMapping("/web/admin/ventas")
     public String ventas(Model model, HttpSession session) {
         if (!esAdmin(session)) return "redirect:/web/home";
@@ -132,8 +124,6 @@ public class AdminController {
         adminService.eliminarVenta(id);
         return "redirect:/web/admin/ventas";
     }
-
-    // ── Cartas ────────────────────────────────────────────────
 
     @GetMapping("/web/admin/cartas")
     public String cartas(Model model, HttpSession session) {
@@ -192,26 +182,14 @@ public class AdminController {
     public String eliminarCarta(@PathVariable Long id, HttpSession session) {
         if (!esAdmin(session)) return "redirect:/web/home";
         if (!cartaRepository.existsById(id)) return "redirect:/web/admin/cartas";
-
-        // 1. Borrar historial de precios
         historialPrecioRepository.deleteByCartaId(id);
-
-        // 2. Borrar de listas de deseos
         listaDeseosRepository.deleteByCartaId(id);
-
-        // 3. Borrar de colecciones
         coleccionCartaRepository.deleteByCartaId(id);
-
-        // 4. Borrar de mazos
         mazoCartaRepository.deleteByCartaId(id);
-
-        // 5. Para ventas: primero borrar valoraciones asociadas, luego las ventas
         ventaRepository.findByCartaId(id).forEach(v -> {
             valoracionRepository.deleteByVentaId(v.getId());
             ventaRepository.delete(v);
         });
-
-        // 6. Finalmente borrar la carta
         cartaRepository.deleteById(id);
         return "redirect:/web/admin/cartas";
     }

@@ -59,7 +59,7 @@ public class MercadoWebController {
     public String verMercado(HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         return "mercado";
@@ -72,44 +72,30 @@ public class MercadoWebController {
             HttpSession session, Model model) {
 
         if (session.getAttribute("username") == null) return "redirect:/web/login";
-
         String username = (String) session.getAttribute("username");
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         Long usuarioId = usuario != null ? usuario.getId() : null;
-
         List<Carta> misCartas = new ArrayList<>();
 
         if (usuarioId != null) {
             if ("wishlist".equals(fuente)) {
                 misCartas = listaDeseosRepository.findByUsuarioId(usuarioId)
-                        .stream()
-                        .map(Listadeseos::getCarta)
-                        .distinct()
-                        .collect(Collectors.toList());
-
+                        .stream().map(Listadeseos::getCarta).distinct().collect(Collectors.toList());
             } else if ("mazo".equals(fuente)) {
                 if (mazoId != null) {
                     misCartas = mazoCartaRepository.findById_MazoId(mazoId)
-                            .stream()
-                            .map(Mazos_Cartas::getCarta)
-                            .distinct()
-                            .collect(Collectors.toList());
+                            .stream().map(Mazos_Cartas::getCarta).distinct().collect(Collectors.toList());
                 } else {
                     misCartas = mazoRepository.findByUsuarioId(usuarioId)
-                            .stream()
-                            .flatMap(m -> m.getCartas().stream())
-                            .map(Mazos_Cartas::getCarta)
-                            .distinct()
-                            .collect(Collectors.toList());
+                            .stream().flatMap(m -> m.getCartas().stream())
+                            .map(Mazos_Cartas::getCarta).distinct().collect(Collectors.toList());
                 }
             } else {
                 misCartas = coleccionMazoService.obtenerCartasDeUsuario(usuarioId);
             }
         }
 
-        List<Mazos> misMazos = usuarioId != null
-                ? mazoRepository.findByUsuarioId(usuarioId)
-                : List.of();
+        List<Mazos> misMazos = usuarioId != null ? mazoRepository.findByUsuarioId(usuarioId) : List.of();
 
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuarioId);
@@ -117,7 +103,6 @@ public class MercadoWebController {
         model.addAttribute("misMazos", misMazos);
         model.addAttribute("fuenteActiva", fuente);
         model.addAttribute("mazoIdActivo", mazoId);
-
         return "venta";
     }
 
@@ -134,9 +119,7 @@ public class MercadoWebController {
             VentaDTO.CrearRequest req = new VentaDTO.CrearRequest();
             req.setCartaId(cartaId);
             req.setTipo(Venta.TipoVenta.valueOf(tipo));
-            if (precio != null && !precio.isBlank()) {
-                req.setPrecio(new BigDecimal(precio));
-            }
+            if (precio != null && !precio.isBlank()) req.setPrecio(new BigDecimal(precio));
             ventaService.publicar(vendedorId, req);
             ra.addFlashAttribute("exito", "¡Anuncio publicado correctamente!");
             return "redirect:/web/mercado";
@@ -156,7 +139,7 @@ public class MercadoWebController {
     public String misVentas(HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         return "MisVentas";
@@ -166,7 +149,7 @@ public class MercadoWebController {
     public String misCompras(HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         return "MisCompras";
@@ -174,11 +157,10 @@ public class MercadoWebController {
 
     @GetMapping("/mercado/valoraciones/{vendedorId}")
     public String verValoracionesVendedor(@PathVariable Long vendedorId,
-                                          HttpSession session,
-                                          Model model) {
+                                          HttpSession session, Model model) {
         if (session.getAttribute("username") == null) return "redirect:/web/login";
         String username = (String) session.getAttribute("username");
-        User usuario = UserRepository.findByUsername(username).orElse(null);
+        User usuario = userRepository.findByUsername(username).orElse(null); // ✅ CORREGIDO
         model.addAttribute("username", username);
         model.addAttribute("usuarioId", usuario != null ? usuario.getId() : null);
         model.addAttribute("vendedorId", vendedorId);
