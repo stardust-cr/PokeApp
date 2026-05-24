@@ -113,7 +113,7 @@ public class WebController {
     public String registerSubmit(@RequestParam String username,
                                  @RequestParam String password,
                                  @RequestParam String email,
-                                 @RequestParam("image") MultipartFile image,
+                                 @RequestParam(value = "image", required = false) MultipartFile image,
                                  HttpSession session,
                                  Model model) {
         if (userRepository.existsByUsername(username)) {
@@ -128,7 +128,7 @@ public class WebController {
             session.setAttribute("pendiente_username", username);
             session.setAttribute("pendiente_email", email);
             session.setAttribute("pendiente_password", passwordEncoder.encode(password));
-            if (!image.isEmpty()) {
+            if (image != null && !image.isEmpty()) {
                 session.setAttribute("pendiente_imagen", image.getBytes());
             }
         } catch (IOException e) {

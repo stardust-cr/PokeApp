@@ -44,22 +44,6 @@
             animation: fadeInUp 0.4s ease-out;
         }
         @keyframes fadeInUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:none;} }
-        .avatar-wrapper {
-            position: relative; display: inline-block; margin-bottom: 16px;
-        }
-        .avatar-img {
-            width: 100px; height: 100px; border-radius: 50%;
-            border: 5px solid #FFB3D9; object-fit: cover;
-            box-shadow: 0 0 0 4px white, 0 0 0 8px #FFD1E8;
-        }
-        .avatar-inicial {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: linear-gradient(135deg, #FFB3D9, #FF8A8A);
-            color: white; font-size: 2.5rem; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            border: 5px solid #FFB3D9;
-            box-shadow: 0 0 0 4px white, 0 0 0 8px #FFD1E8;
-        }
         .perfil-nombre { font-size: 1.5rem; font-weight: bold; color: #333; margin-bottom: 4px; }
         .perfil-email  { color: #AAA; font-size: 0.88rem; margin-bottom: 14px; }
         .perfil-badge {
@@ -110,10 +94,7 @@
             box-shadow: 0 0 0 4px rgba(255,179,217,0.15);
         }
         .form-group input[readonly] { color: #AAA; cursor: not-allowed; background: #F5F5F5; }
-        .form-group input[type="file"] {
-            background: #FFF9C4; border: 2px dashed #FBC02D;
-            color: #78650A; cursor: pointer; padding: 10px;
-        }
+        .form-group
 
         /* ── ALERTA ── */
         .alert {
@@ -173,11 +154,6 @@
 
     <!-- Cabecera de perfil -->
     <div class="perfil-header">
-        <div class="avatar-wrapper">
-            <img th:if="${tieneAvatar}"
-                 th:src="@{/web/perfil/avatar}" class="avatar-img" th:alt="${username}"/>
-            <div th:unless="${tieneAvatar}" class="avatar-inicial" th:text="${username != null ? username.substring(0, 1).toUpperCase() : 'A'}">A</div>
-        </div>
         <div class="perfil-nombre" th:text="${username}">Entrenador</div>
         <div class="perfil-email"  th:text="${email}">correo@poke.com</div>
         <span class="perfil-badge">🎮 Entrenador Pokémon</span>
@@ -219,14 +195,7 @@
             <button type="submit" class="btn-guardar">Actualizar nombre</button>
         </form>
 
-        <!-- Cambiar avatar -->
-        <form th:action="@{/web/perfil/avatar}" method="post" enctype="multipart/form-data" style="margin-bottom: 20px;">
-            <div class="form-group">
-                <label>Foto de perfil</label>
-                <input type="file" name="imagen" accept="image/*"/>
-            </div>
-            <button type="submit" class="btn-guardar">Actualizar foto</button>
-        </form>
+
 
         <!-- Cambiar contraseña -->
         <form th:action="@{/web/perfil/password}" method="post">
